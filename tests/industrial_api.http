@@ -1,0 +1,27 @@
+### Variables
+@baseUrl = http://localhost:5000/api
+@authToken = your_jwt_token_here
+
+### 1. Get Echo Data (Test Request)
+GET https://postman-echo.com/get
+Content-Type: application/json
+
+###
+
+### 2. Get All Industrial Items
+GET {{baseUrl}}/items
+Authorization: Bearer {{authToken}}
+
+###
+
+### 3. Create a New Item
+POST {{baseUrl}}/items
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "name": "Steel Valve XL",
+    "category": "Hardware",
+    "quantity": 120,
+    "status": "In Stock"
+}
