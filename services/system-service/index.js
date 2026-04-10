@@ -13,10 +13,13 @@ const INVENTORY_DB = [
 
 app.get('/all-data', async (req, res) => {
     try {
-        // Render par deployment ke baad yahan Render ka URL aayega
         const auditUrl = process.env.AUDIT_SERVICE_URL || 'http://localhost:5003';
         const logs = await axios.get(`${auditUrl}/logs`);
-        res.json({ status: "SUCCESS", inventory: INVENTORY_DB, audit_trail: logs.data });
+        res.json({
+            status: "SUCCESS",
+            inventory: INVENTORY_DB,
+            audit_trail: logs.data
+        });
     } catch (err) {
         res.json({ status: "PARTIAL", inventory: INVENTORY_DB, audit_trail: [] });
     }
