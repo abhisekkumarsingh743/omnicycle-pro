@@ -1,0 +1,7 @@
+/* index.css - Sirf basic resets ke liye */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #000; /* Taaki white flash na aaye reload pe */
+}
