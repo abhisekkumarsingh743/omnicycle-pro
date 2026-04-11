@@ -38,7 +38,7 @@ const App = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`${API}/auth`, credentials);
+            const res = await axios.post(`${API}/auth/login`, credentials);
             localStorage.setItem('icms_user', JSON.stringify(res.data));
             setUser(res.data);
         } catch (err) { alert("Invalid Credentials"); }
