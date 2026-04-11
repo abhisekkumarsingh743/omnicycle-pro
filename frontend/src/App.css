@@ -1,94 +1,50 @@
 :root {
-  --bg-dark: #000000;
-  --bg-card: #0a0a0a;
-  --text-primary: #e0e0e0;
-  --primary: #a18e0d; /* Golden brown look */
-  --primary-hover: #c9b110;
-  --danger: #b22222;
-  --border-light: #1a1a1a;
-  --border-accent: #2c2c2c;
-  --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --primary: #a18e0d;
+  --bg: #000000;
+  --card-bg: rgba(20, 20, 20, 0.7);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #e0e0e0;
 }
 
-body, html, #root {
-  margin: 0; padding: 0; height: 100%;
-  font-family: var(--font-main);
-  background: var(--bg-dark); color: var(--text-primary);
-}
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
 
-/* App Containers */
-.app { display: flex; height: 100vh; width: 100vw; }
-
-/* Login (Pichle error se different approach) */
-.login-view { align-items: center; justify-content: center; background: url('data:image/svg+xml,...'); }
-.login-box { 
-  background: var(--bg-card); padding: 50px; border-radius: 12px;
-  box-shadow: 0 0 10px rgba(161, 142, 13, 0.2); text-align: center;
-}
-.login-box h1 { margin-bottom: 30px; font-weight: 300; }
-.login-box input { display: block; width: 300px; margin: 15px auto; }
+/* Login Page */
+.login-container { height: 100vh; display: flex; align-items: center; justify-content: center; }
+.login-card { background: #0a0a0a; padding: 40px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
+.login-card h1 { color: var(--primary); margin-bottom: 30px; font-weight: 300; }
+.login-card input { display: block; width: 300px; padding: 12px; margin: 10px auto; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; }
+.login-btn { background: var(--primary); color: #000; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
 
 /* Dashboard Layout */
-.dashboard-view { display: grid; grid-template-columns: 250px 1fr; }
+.dashboard { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
 
 /* Sidebar */
-.main-sidebar { 
-  background: #050505; padding: 30px 20px;
-  display: flex; flex-direction: column; justify-content: space-between;
-  border-right: 1px solid var(--border-light);
-}
-.main-sidebar h2 { color: var(--primary); text-align: center; font-weight: 400; }
-.main-sidebar nav button {
-  display: block; width: 100%; text-align: left; padding: 15px; margin: 10px 0;
-  background: none; border: none; color: #888; border-radius: 8px; font-size: 16px;
-}
-.main-sidebar nav button.active { background: #111; color: var(--primary); font-weight: bold; }
-.main-sidebar nav button:hover { background: #0c0c0c; }
-.terminate-btn { background: #1a1a1a; color: #888; margin-top: auto; }
+.sidebar { background: #050505; border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; }
+.brand { font-size: 22px; color: var(--primary); font-weight: bold; margin-bottom: 50px; text-align: center; }
+.sidebar nav button { width: 100%; text-align: left; padding: 15px; background: none; border: none; color: #777; cursor: pointer; transition: 0.3s; font-size: 15px; border-radius: 8px; margin-bottom: 5px; }
+.sidebar nav button.active { background: #111; color: var(--primary); }
+.sidebar nav button:hover { color: #fff; }
+.user-info { margin-top: auto; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+.logout-btn { background: none; border: 1px solid #444; color: #888; width: 100%; padding: 8px; margin-top: 15px; cursor: pointer; border-radius: 4px; }
 
 /* Main Content */
-.main-content { padding: 40px; overflow-y: auto; }
-.main-content header { margin-bottom: 30px; }
-.main-content h1 { font-weight: 300; margin-top: 0; margin-bottom: 20px; }
+.content { padding: 40px; overflow-y: auto; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+header h1 { font-weight: 300; letter-spacing: 2px; }
+.status-indicator { color: #2ecc71; font-size: 12px; }
 
-/* Fixed the broken Add Bar */
-.add-item-bar {
-  display: grid;
-  grid-template-columns: 2fr 1fr 80px 100px;
-  gap: 15px;
-  background: var(--bg-card);
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid var(--border-accent);
-}
-.add-item-bar input { margin: 0; padding: 12px; }
+/* Add Item Form Bar */
+.add-item-form { display: grid; grid-template-columns: 2fr 1fr 100px 150px; gap: 15px; margin-bottom: 30px; }
+.add-item-form input { background: #0a0a0a; border: 1px solid #222; padding: 12px; color: #fff; border-radius: 6px; }
+.add-btn { background: #2ecc71; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
 
-/* Buttons & Inputs */
-input {
-  background: #000;
-  border: 1px solid var(--border-light);
-  color: var(--text-primary);
-  padding: 10px 15px;
-  border-radius: 6px;
-}
-button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 20px; transition: 0.2s; }
-.primary-btn, .add-btn { background: var(--primary); color: #000; font-weight: bold; width: 100%; }
-.add-btn { background: #2e7d32; color: #fff; font-weight: normal; }
-.primary-btn:hover { background: var(--primary-hover); }
-.add-btn:hover { background: #388e3c; }
+/* Glass Card & Table */
+.glass-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; backdrop-filter: blur(10px); }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { text-align: left; padding: 15px; border-bottom: 1px solid #222; color: var(--primary); font-size: 13px; }
+.data-table td { padding: 18px 15px; border-bottom: 1px solid #111; color: #ccc; }
+.stock-val { font-weight: bold; color: #fff; }
+.del-icon { background: none; border: none; cursor: pointer; font-size: 18px; filter: grayscale(1); }
+.del-icon:hover { filter: none; transform: scale(1.2); }
 
-/* Table Styling */
-.table-wrapper { 
-  background: var(--bg-card); padding: 20px;
-  border-radius: 8px; border: 1px solid var(--border-accent);
-}
-.inventory-table { width: 100%; border-collapse: collapse; }
-.inventory-table th, .inventory-table td { text-align: left; padding: 18px; border-bottom: 1px solid var(--border-light); }
-.inventory-table th { color: var(--primary); text-transform: uppercase; font-size: 14px; }
-.inventory-table tr:hover { background: #0e0e0e; }
-.stock-count { font-weight: bold; color: #fff; }
-
-/* Fixed Actions and Delete Button */
-.action-cell { text-align: center; width: 80px; }
-.delete-btn { background: #0e0e0e; border: 1px solid #1a1a1a; padding: 8px; }
-.delete-btn:hover { background: #1a1a1a; border-color: var(--danger); }
+.empty-state { text-align: center; padding: 100px; color: #555; }
