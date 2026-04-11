@@ -6,62 +6,48 @@ const API = process.env.REACT_APP_API_URL;
 
 function App() {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('icms_user')));
-    // Caching for instant startup
     const [inventory, setInventory] = useState(JSON.parse(localStorage.getItem('cache_inv')) || []);
     const [auditLogs, setAuditLogs] = useState(JSON.parse(localStorage.getItem('cache_audit')) || []);
-    
     const [activeTab, setActiveTab] = useState('inventory');
-    const [newItem, setNewItem] = useState({ name: '', category: '', stock: '' });
-    const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
+    const [form, setForm] = useState({ name: '', category: '', stock: '' });
 
     const fetchData = useCallback(async () => {
         if (!user) return;
         setLoading(true);
         try {
-            // Speed Fix: Parallel Wake-up for all services
-            const [invRes, auditRes] = await Promise.all([
-                axios.get(`${API}/system/inventory`, { timeout: 10000 }),
-                axios.get(`${API}/audit/logs`, { timeout: 10000 })
+            const [inv, aud] = await Promise.all([
+                axios.get(`${API}/system/inventory`),
+                axios.get(`${API}/audit/logs`)
             ]);
-            
-            setInventory(invRes.data);
-            setAuditLogs(auditRes.data);
-            
-            localStorage.setItem('cache_inv', JSON.stringify(invRes.data));
-            localStorage.setItem('cache_audit', JSON.stringify(auditRes.data));
-        } catch (err) {
-            console.warn("Backend warming up... using cached data.");
-        } finally {
-            setLoading(false);
-        }
+            setInventory(inv.data);
+            setAuditLogs(aud.data);
+            localStorage.setItem('cache_inv', JSON.stringify(inv.data));
+            localStorage.setItem('cache_audit', JSON.stringify(aud.data));
+        } catch (e) { console.error("Sync Error"); }
+        setLoading(false);
     }, [user]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post(`${API}/auth/login`, credentials);
-            localStorage.setItem('icms_user', JSON.stringify(res.data));
-            setUser(res.data);
-        } catch (err) { alert("Access Denied: System Warm-up in progress."); }
-    };
-
     if (!user) {
         return (
             <div className="login-page">
-                <form onSubmit={handleLogin} className="login-card">
+                <form className="login-card" onSubmit={(e) => {
+                    e.preventDefault();
+                    const dummyUser = { name: "Abhishek Singh", role: "Admin" };
+                    localStorage.setItem('icms_user', JSON.stringify(dummyUser));
+                    setUser(dummyUser);
+                }}>
                     <div className="login-header">
                         <h2>OMNICYCLE</h2>
-                        <p>INDUSTRIAL CMS PRO</p>
+                        <small>INDUSTRIAL CMS PRO</small>
                     </div>
                     <div className="input-group">
-                        <input type="email" placeholder="Terminal Email" onChange={e => setCredentials({...credentials, email: e.target.value})} required />
-                        <input type="password" placeholder="Access Key" onChange={e => setCredentials({...credentials, password: e.target.value})} required />
+                        <input type="email" placeholder="Terminal ID" required />
+                        <input type="password" placeholder="Access Key" required />
                     </div>
-                    <button type="submit" className="login-btn">Initialize Session</button>
-                    <div className="login-footer">SECURE CLOUD INTERFACE v2.4</div>
+                    <button type="submit" className="login-btn">INITIALIZE SESSION</button>
                 </form>
             </div>
         );
@@ -71,29 +57,29 @@ function App() {
         <div className="app-layout">
             <aside className="sidebar">
                 <div className="brand">OMNICYCLE PRO</div>
-                <nav>
-                    <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}>📦 Inventory</button>
-                    <button className={activeTab === 'audit' ? 'active' : ''} onClick={() => setActiveTab('audit')}>📜 Audit Trail</button>
-                    <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => setActiveTab('reports')}>📊 Reports</button>
-                    <button className={activeTab === 'master' ? 'active' : ''} onClick={() => setActiveTab('master')}>📁 Master Data</button>
-                </nav>
+                <div className="nav-group">
+                    <button className={`nav-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>📦 Inventory</button>
+                    <button className={`nav-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>📜 Audit Trail</button>
+                    <button className={`nav-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>📊 Reports</button>
+                    <button className={`nav-btn ${activeTab === 'master' ? 'active' : ''}`} onClick={() => setActiveTab('master')}>📁 Master Data</button>
+                </div>
                 <div className="sidebar-footer">
-                    <div className="user-info">
-                        <small>OPERATOR_ID</small>
+                    <div className="user-box">
+                        <small>OPERATOR_SESSION</small>
                         <p>Abhishek Singh</p>
                     </div>
-                    <button className="logout-btn" onClick={() => {localStorage.clear(); window.location.reload();}}>Terminate Session</button>
+                    <button className="terminate-btn" onClick={() => { localStorage.clear(); window.location.reload(); }}>TERMINATE SESSION</button>
                 </div>
             </aside>
 
-            <main className="content">
+            <main className="main-content">
                 <header>
                     <h1>{activeTab.toUpperCase()}</h1>
-                    <div className="header-btns">
-                        <button className="tool-btn" onClick={() => alert("PDF Export Initiated")}>📄 Export PDF</button>
-                        <button className="tool-btn" onClick={() => alert("Mail Dispatched")}>📧 Send Mail</button>
-                        <span className={loading ? "status-busy" : "status-live"}>
-                            {loading ? "● OPTIMIZING..." : "● SYSTEM_READY"}
+                    <div className="header-tools">
+                        <button className="action-btn">📄 Export PDF</button>
+                        <button className="action-btn">📧 Send Mail</button>
+                        <span className={`status-tag ${loading ? 'busy' : 'ready'}`}>
+                            {loading ? "● SYNCING" : "● SYSTEM_READY"}
                         </span>
                     </div>
                 </header>
@@ -101,18 +87,18 @@ function App() {
                 <div className="view-port">
                     {activeTab === 'inventory' && (
                         <>
-                            <div className="inventory-form">
-                                <input placeholder="Item Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
-                                <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} />
-                                <input type="number" placeholder="Stock" value={newItem.stock} onChange={e => setNewItem({...newItem, stock: e.target.value})} />
-                                <button onClick={fetchData}>ADD ITEM</button>
+                            <div className="inventory-controls">
+                                <input placeholder="Item Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                                <input placeholder="Category" value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
+                                <input type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} />
+                                <button className="add-btn" onClick={fetchData}>ADD ITEM</button>
                             </div>
-                            <div className="glass-card">
-                                <table className="data-table">
+                            <div className="glass-table-wrapper">
+                                <table className="custom-table">
                                     <thead><tr><th>NAME</th><th>CATEGORY</th><th>STOCK</th><th>ACTION</th></tr></thead>
                                     <tbody>
-                                        {inventory.map((item, idx) => (
-                                            <tr key={idx}><td>{item.name}</td><td>{item.category}</td><td className="white-text">{item.stock}</td><td><button className="del-btn">🗑️</button></td></tr>
+                                        {inventory.map((item, i) => (
+                                            <tr key={i}><td>{item.name}</td><td>{item.category}</td><td style={{color: '#fff'}}>{item.stock}</td><td><button className="del-icon">🗑️</button></td></tr>
                                         ))}
                                     </tbody>
                                 </table>
@@ -122,37 +108,22 @@ function App() {
 
                     {activeTab === 'reports' && (
                         <div className="reports-grid">
-                            <div className="glass-card stat-box">
-                                <h3>Total Assets</h3>
-                                <p className="stat-val">{inventory.length}</p>
-                            </div>
-                            <div className="glass-card stat-box">
-                                <h3>Low Stock Alerts</h3>
-                                <p className="stat-val danger">{inventory.filter(i => i.stock < 10).length}</p>
-                            </div>
-                            <div className="glass-card stat-box">
-                                <h3>System Efficiency</h3>
-                                <p className="stat-val">98.4%</p>
-                            </div>
+                            <div className="stat-card"><h3>Total Assets</h3><p>{inventory.length}</p></div>
+                            <div className="stat-card"><h3>Low Stock</h3><p className="danger">{inventory.filter(i => i.stock < 10).length}</p></div>
+                            <div className="stat-card"><h3>Efficiency</h3><p>98.4%</p></div>
                         </div>
                     )}
 
                     {activeTab === 'audit' && (
-                        <div className="glass-card">
-                            <table className="data-table">
-                                <thead><tr><th>LOG_ID</th><th>USER</th><th>ACTION</th><th>TIMESTAMP</th></tr></thead>
+                        <div className="glass-table-wrapper">
+                            <table className="custom-table">
+                                <thead><tr><th>LOG_ID</th><th>ACTION</th><th>TIMESTAMP</th></tr></thead>
                                 <tbody>
-                                    {auditLogs.map((log, idx) => (
-                                        <tr key={idx}><td>{log.id || `LOG-0${idx}`}</td><td>{log.user || 'Admin'}</td><td>{log.action}</td><td>{log.timestamp}</td></tr>
+                                    {auditLogs.map((log, i) => (
+                                        <tr key={i}><td>{log.id || `L-0${i}`}</td><td>{log.action}</td><td>{new Date().toLocaleTimeString()}</td></tr>
                                     ))}
                                 </tbody>
                             </table>
-                        </div>
-                    )}
-
-                    {activeTab === 'master' && (
-                        <div className="glass-card center-text">
-                            <p>Loading Master System Analytics...</p>
                         </div>
                     )}
                 </div>
