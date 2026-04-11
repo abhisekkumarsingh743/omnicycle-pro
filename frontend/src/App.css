@@ -1,50 +1,26 @@
-:root {
-  --primary: #a18e0d;
-  --bg: #000000;
-  --card-bg: rgba(20, 20, 20, 0.7);
-  --border: rgba(255, 255, 255, 0.1);
-  --text: #e0e0e0;
-}
+:root { --primary: #a18e0d; --bg: #000; --glass: rgba(20, 20, 20, 0.8); }
+body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; }
 
-body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
-
-/* Login Page */
-.login-container { height: 100vh; display: flex; align-items: center; justify-content: center; }
-.login-card { background: #0a0a0a; padding: 40px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
-.login-card h1 { color: var(--primary); margin-bottom: 30px; font-weight: 300; }
-.login-card input { display: block; width: 300px; padding: 12px; margin: 10px auto; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; }
-.login-btn { background: var(--primary); color: #000; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-
-/* Dashboard Layout */
 .dashboard { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+.sidebar { background: #050505; padding: 20px; border-right: 1px solid #1a1a1a; display: flex; flex-direction: column; }
+.brand { font-size: 20px; color: var(--primary); margin-bottom: 40px; font-weight: bold; }
 
-/* Sidebar */
-.sidebar { background: #050505; border-right: 1px solid var(--border); padding: 30px 20px; display: flex; flex-direction: column; }
-.brand { font-size: 22px; color: var(--primary); font-weight: bold; margin-bottom: 50px; text-align: center; }
-.sidebar nav button { width: 100%; text-align: left; padding: 15px; background: none; border: none; color: #777; cursor: pointer; transition: 0.3s; font-size: 15px; border-radius: 8px; margin-bottom: 5px; }
-.sidebar nav button.active { background: #111; color: var(--primary); }
-.sidebar nav button:hover { color: #fff; }
-.user-info { margin-top: auto; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 10px; }
-.logout-btn { background: none; border: 1px solid #444; color: #888; width: 100%; padding: 8px; margin-top: 15px; cursor: pointer; border-radius: 4px; }
+nav button { width: 100%; padding: 12px; text-align: left; background: none; border: none; color: #666; cursor: pointer; border-radius: 6px; margin-bottom: 5px; }
+nav button.active { background: #111; color: var(--primary); }
 
-/* Main Content */
-.content { padding: 40px; overflow-y: auto; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-header h1 { font-weight: 300; letter-spacing: 2px; }
+.content { padding: 40px; }
+header { display: flex; justify-content: space-between; margin-bottom: 30px; }
 .status-indicator { color: #2ecc71; font-size: 12px; }
 
-/* Add Item Form Bar */
-.add-item-form { display: grid; grid-template-columns: 2fr 1fr 100px 150px; gap: 15px; margin-bottom: 30px; }
-.add-item-form input { background: #0a0a0a; border: 1px solid #222; padding: 12px; color: #fff; border-radius: 6px; }
-.add-btn { background: #2ecc71; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+.add-bar { display: grid; grid-template-columns: 2fr 1fr 100px 120px; gap: 10px; margin-bottom: 20px; }
+.add-bar input { background: #0a0a0a; border: 1px solid #222; padding: 10px; color: #fff; border-radius: 4px; }
+.add-btn { background: #2ecc71; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
 
-/* Glass Card & Table */
-.glass-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; backdrop-filter: blur(10px); }
+.glass-card { background: var(--glass); border: 1px solid #222; border-radius: 10px; padding: 20px; min-height: 200px; }
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table th { text-align: left; padding: 15px; border-bottom: 1px solid #222; color: var(--primary); font-size: 13px; }
-.data-table td { padding: 18px 15px; border-bottom: 1px solid #111; color: #ccc; }
-.stock-val { font-weight: bold; color: #fff; }
-.del-icon { background: none; border: none; cursor: pointer; font-size: 18px; filter: grayscale(1); }
-.del-icon:hover { filter: none; transform: scale(1.2); }
+.data-table th { text-align: left; color: var(--primary); padding: 10px; border-bottom: 1px solid #222; font-size: 12px; }
+.data-table td { padding: 15px 10px; border-bottom: 1px solid #111; color: #ccc; }
+.del-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
 
-.empty-state { text-align: center; padding: 100px; color: #555; }
+.raw-data { color: #888; font-size: 12px; }
+.empty { text-align: center; color: #444; margin-top: 80px; }
