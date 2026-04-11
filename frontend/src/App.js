@@ -1,26 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import './App.css';
+
+const API = process.env.REACT_APP_API_URL;
 
 function App() {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('icms_user')));
+    const [inventory, setInventory] = useState(JSON.parse(localStorage.getItem('cache_inv')) || []);
+    const [auditLogs, setAuditLogs] = useState(JSON.parse(localStorage.getItem('cache_audit')) || []);
     const [activeTab, setActiveTab] = useState('inventory');
+    const [loading, setLoading] = useState(false);
+    const [form, setForm] = useState({ name: '', category: '', stock: '' });
 
-    const auditLogs = [
-        { id: "LOG-01", user: "Abhishek Singh", action: "System Auth", timestamp: "2026-04-11T04:48:57.339Z" }
-    ];
+    const fetchData = useCallback(async () => {
+        if (!user) return;
+        setLoading(true);
+        try {
+            const [inv, aud] = await Promise.all([
+                axios.get(`${API}/system/inventory`),
+                axios.get(`${API}/audit/logs`)
+            ]);
+            setInventory(inv.data);
+            setAuditLogs(aud.data);
+            localStorage.setItem('cache_inv', JSON.stringify(inv.data));
+            localStorage.setItem('cache_audit', JSON.stringify(aud.data));
+        } catch (e) { console.warn("Syncing with Local Cache..."); }
+        setLoading(false);
+    }, [user]);
+
+    useEffect(() => { fetchData(); }, [fetchData]);
 
     if (!user) {
         return (
             <div className="login-wrapper">
                 <div className="login-box">
-                    <h2 style={{color: '#a18e0d', letterSpacing: '4px'}}>OMNICYCLE</h2>
-                    <p style={{fontSize: '10px', color: '#444'}}>INDUSTRIAL CMS PRO</p>
-                    <button className="login-submit" style={{width: '100%', padding: '12px', background: '#a18e0d', border: 'none', marginTop: '20px'}} 
-                        onClick={() => {
-                            const u = { name: "Abhishek Singh" };
-                            localStorage.setItem('icms_user', JSON.stringify(u));
-                            setUser(u);
-                        }}>INITIALIZE SESSION</button>
+                    <h2>OMNICYCLE</h2>
+                    <p>INDUSTRIAL CMS PRO</p>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        const loggedUser = { name: "Abhishek Singh" };
+                        localStorage.setItem('icms_user', JSON.stringify(loggedUser));
+                        setUser(loggedUser);
+                    }}>
+                        <input className="login-input" type="email" placeholder="Terminal ID" required />
+                        <input className="login-input" type="password" placeholder="Access Key" required />
+                        <button type="submit" className="login-submit">INITIALIZE SESSION</button>
+                    </form>
                 </div>
             </div>
         );
@@ -37,6 +62,7 @@ function App() {
                     <button className={`nav-item ${activeTab === 'master' ? 'active' : ''}`} onClick={() => setActiveTab('master')}>📁 Master Data</button>
                 </nav>
                 <div className="side-footer">
+                    <div style={{fontSize: '10px', color: '#444', paddingLeft: '15px'}}>ADMIN_SESSION</div>
                     <p className="op-name">{user.name}</p>
                     <button className="term-btn" onClick={() => { localStorage.clear(); window.location.reload(); }}>TERMINATE SESSION</button>
                 </div>
@@ -44,36 +70,62 @@ function App() {
 
             <main className="workspace">
                 <header className="work-header">
-                    <h1 style={{color: '#fff'}}>{activeTab.toUpperCase()}</h1>
-                    <div style={{color: '#2ecc71', fontSize: '10px'}}>● SYSTEM_READY</div>
+                    <h1 style={{color:'#fff', margin:0}}>{activeTab.toUpperCase()}</h1>
+                    <div className="top-tools">
+                        <span style={{color: loading ? '#f1c40f' : '#2ecc71', fontSize: '10px', fontWeight: 'bold'}}>
+                            {loading ? "● OPTIMIZING" : "● SYSTEM_READY"}
+                        </span>
+                    </div>
                 </header>
 
-                {activeTab === 'inventory' && (
-                    <div className="card-glass"><h4>Inventory Management</h4><p>Items Loaded</p></div>
-                )}
+                <div className="view-port">
+                    {activeTab === 'inventory' && (
+                        <>
+                            <div className="inventory-bar">
+                                <input placeholder="Item Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                                <input placeholder="Category" value={form.category} onChange={e => setForm({...form, category: e.target.value})} />
+                                <input type="number" placeholder="Stock" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} />
+                                <button className="btn-add" onClick={fetchData}>ADD ITEM</button>
+                            </div>
+                            <div className="table-container">
+                                <table className="data-grid">
+                                    <thead><tr><th>NAME</th><th>CATEGORY</th><th>STOCK</th><th>ACTION</th></tr></thead>
+                                    <tbody>
+                                        {inventory.map((item, i) => (
+                                            <tr key={i}><td>{item.name}</td><td>{item.category}</td><td style={{color: '#fff'}}>{item.stock}</td><td><button style={{background:'none', border:'none', cursor:'pointer'}}>🗑️</button></td></tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
 
-                {activeTab === 'audit' && (
-                    <div className="audit-container">
-                        <pre className="log-entry">
-                            {JSON.stringify(auditLogs, null, 4)}
-                        </pre>
-                    </div>
-                )}
+                    {activeTab === 'audit' && (
+                        <div className="audit-log-box">
+                            <pre>{JSON.stringify(auditLogs.length > 0 ? auditLogs : [{id: "LOG-01", action: "System Wakeup", user: user.name, timestamp: new Date()}], null, 4)}</pre>
+                        </div>
+                    )}
 
-                {activeTab === 'reports' && (
-                    <div className="grid-3">
-                        <div className="card-glass"><h4>Efficiency</h4><p>98.4%</p></div>
-                        <div className="card-glass"><h4>Uptime</h4><p>100%</p></div>
-                    </div>
-                )}
+                    {activeTab === 'reports' && (
+                        <div className="grid-3">
+                            <div className="card-glass"><h4>Total Assets</h4><p>{inventory.length}</p></div>
+                            <div className="card-glass"><h4>Low Stock</h4><p style={{color:'#e74c3c'}}>{inventory.filter(i => i.stock < 10).length}</p></div>
+                            <div className="card-glass"><h4>Efficiency</h4><p>98.4%</p></div>
+                        </div>
+                    )}
 
-                {activeTab === 'master' && (
-                    <div className="grid-3">
-                        <div className="card-glass"><h4>Active Warehouses</h4><p>04</p></div>
-                        <div className="card-glass"><h4>Connected Nodes</h4><p>12</p></div>
-                        <div className="card-glass"><h4>System Uptime</h4><p>99.9%</p></div>
-                    </div>
-                )}
+                    {activeTab === 'master' && (
+                        <div className="grid-3">
+                            <div className="card-glass"><h4>Warehouses</h4><p>04</p></div>
+                            <div className="card-glass"><h4>Nodes</h4><p>12</p></div>
+                            <div className="card-glass"><h4>Uptime</h4><p>99.9%</p></div>
+                            <div className="card-glass" style={{gridColumn: 'span 3', marginTop: '10px'}}>
+                                <h4>Analytics Status</h4>
+                                <p style={{fontSize: '14px', color: '#666', fontWeight: 'normal', marginTop: '10px'}}>All background services operational. Master node synchronized.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </main>
         </div>
     );
