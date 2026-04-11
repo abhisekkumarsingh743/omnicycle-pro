@@ -18,9 +18,9 @@ Object.entries(routes).forEach(([path, target]) => {
             target,
             changeOrigin: true,
             pathRewrite: { [`^${path}`]: '' },
-            proxyTimeout: 120000, // 2 Minutes wait for cold starts
-            timeout: 120000,
+            proxyTimeout: 120000,
             onProxyReq: (proxyReq, req, res) => {
+                // Fix: Ensure JSON body is forwarded correctly
                 if (req.body && Object.keys(req.body).length) {
                     const bodyData = JSON.stringify(req.body);
                     proxyReq.setHeader('Content-Type', 'application/json');
@@ -29,10 +29,10 @@ Object.entries(routes).forEach(([path, target]) => {
                 }
             },
             onError: (err, req, res) => {
-                res.status(202).json({ status: "warming_up", data: [] });
+                res.status(502).json({ error: "Service Warm-up Required", status: "reconnecting" });
             }
         }));
     }
 });
 
-app.listen(process.env.PORT || 8000);
+app.listen(process.env.PORT || 8000, () => console.log("Gateway Live"));

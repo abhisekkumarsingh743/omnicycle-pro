@@ -17,16 +17,16 @@ function App() {
         setLoading(true);
         try {
             const [inv, aud] = await Promise.all([
-                axios.get(`${API}/system/inventory`),
-                axios.get(`${API}/audit/logs`)
+                axios.get(`${API}/system/inventory`).catch(() => ({ data: inventory })),
+                axios.get(`${API}/audit/logs`).catch(() => ({ data: auditLogs }))
             ]);
             setInventory(inv.data);
             setAuditLogs(aud.data);
             localStorage.setItem('cache_inv', JSON.stringify(inv.data));
             localStorage.setItem('cache_audit', JSON.stringify(aud.data));
-        } catch (e) { console.warn("Syncing with Local Cache..."); }
+        } catch (e) { console.warn("Backend Link Error: Check Render Logs"); }
         setLoading(false);
-    }, [user]);
+    }, [user, inventory, auditLogs]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -73,7 +73,7 @@ function App() {
                     <h1 style={{color:'#fff', margin:0}}>{activeTab.toUpperCase()}</h1>
                     <div className="top-tools">
                         <span style={{color: loading ? '#f1c40f' : '#2ecc71', fontSize: '10px', fontWeight: 'bold'}}>
-                            {loading ? "● OPTIMIZING" : "● SYSTEM_READY"}
+                            {loading ? "● SYNCING_GATEWAY" : "● SYSTEM_READY"}
                         </span>
                     </div>
                 </header>
@@ -91,9 +91,9 @@ function App() {
                                 <table className="data-grid">
                                     <thead><tr><th>NAME</th><th>CATEGORY</th><th>STOCK</th><th>ACTION</th></tr></thead>
                                     <tbody>
-                                        {inventory.map((item, i) => (
+                                        {inventory.length > 0 ? inventory.map((item, i) => (
                                             <tr key={i}><td>{item.name}</td><td>{item.category}</td><td style={{color: '#fff'}}>{item.stock}</td><td><button style={{background:'none', border:'none', cursor:'pointer'}}>🗑️</button></td></tr>
-                                        ))}
+                                        )) : <tr><td colSpan="4" style={{textAlign:'center', padding:'20px'}}>No Inventory Data Found</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
@@ -102,7 +102,7 @@ function App() {
 
                     {activeTab === 'audit' && (
                         <div className="audit-log-box">
-                            <pre>{JSON.stringify(auditLogs.length > 0 ? auditLogs : [{id: "LOG-01", action: "System Wakeup", user: user.name, timestamp: new Date()}], null, 4)}</pre>
+                            <pre>{JSON.stringify(auditLogs.length > 0 ? auditLogs : [{event: "Gateway Connection Initialized", timestamp: new Date()}], null, 4)}</pre>
                         </div>
                     )}
 
@@ -119,10 +119,6 @@ function App() {
                             <div className="card-glass"><h4>Warehouses</h4><p>04</p></div>
                             <div className="card-glass"><h4>Nodes</h4><p>12</p></div>
                             <div className="card-glass"><h4>Uptime</h4><p>99.9%</p></div>
-                            <div className="card-glass" style={{gridColumn: 'span 3', marginTop: '10px'}}>
-                                <h4>Analytics Status</h4>
-                                <p style={{fontSize: '14px', color: '#666', fontWeight: 'normal', marginTop: '10px'}}>All background services operational. Master node synchronized.</p>
-                            </div>
                         </div>
                     )}
                 </div>
