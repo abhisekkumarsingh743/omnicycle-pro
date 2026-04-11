@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -12,16 +12,20 @@ function App() {
     const [newItem, setNewItem] = useState({ name: '', category: '', stock: '' });
     const [credentials, setCredentials] = useState({ email: '', password: '' });
 
-    const fetchData = async () => {
+    // --- Optimized Data Fetching ---
+    const fetchData = useCallback(async () => {
         try {
             const invRes = await axios.get(`${API}/system/inventory`);
-            setInventory(invRes.data);
+            setInventory(Array.isArray(invRes.data) ? invRes.data : []);
+            
             const auditRes = await axios.get(`${API}/audit/logs`);
-            setAuditLogs(auditRes.data);
-        } catch (err) { console.error("Fetch Error", err); }
-    };
+            setAuditLogs(Array.isArray(auditRes.data) ? auditRes.data : []);
+        } catch (err) { 
+            console.error("System Fetch Error", err); 
+        }
+    }, []);
 
-    useEffect(() => { if (user) fetchData(); }, [user]);
+    useEffect(() => { if (user) fetchData(); }, [user, fetchData]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -42,7 +46,7 @@ function App() {
     };
 
     const deleteItem = async (id) => {
-        if (window.confirm("Delete this item?")) {
+        if (window.confirm("Confirm Delete?")) {
             try {
                 await axios.delete(`${API}/system/inventory/${id}`);
                 fetchData();
@@ -50,98 +54,101 @@ function App() {
         }
     };
 
-    const exportPDF = () => alert("Generating PDF Report...");
-    const sendMail = () => alert("Sending Report to Admin...");
-
     if (!user) {
         return (
-            <div className="login-container">
+            <div className="login-page">
                 <form onSubmit={handleLogin} className="login-card">
-                    <h1>OMNICYCLE LOGIN</h1>
+                    <h2>OMNICYCLE LOGIN</h2>
                     <input type="email" placeholder="Email" onChange={e => setCredentials({...credentials, email: e.target.value})} required />
                     <input type="password" placeholder="Password" onChange={e => setCredentials({...credentials, password: e.target.value})} required />
-                    <button type="submit" className="login-btn">Initialize Session</button>
+                    <button type="submit">Initialize Session</button>
                 </form>
             </div>
         );
     }
 
     return (
-        <div className="dashboard">
+        <div className="app-container">
             <aside className="sidebar">
                 <div className="brand">OMNICYCLE PRO</div>
-                <nav>
+                <nav className="nav-menu">
                     <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}>📦 Inventory</button>
                     <button className={activeTab === 'audit' ? 'active' : ''} onClick={() => setActiveTab('audit')}>📜 Audit Trail</button>
                     <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => setActiveTab('reports')}>📊 Reports</button>
                     <button className={activeTab === 'master' ? 'active' : ''} onClick={() => setActiveTab('master')}>📁 Master Data</button>
                 </nav>
-                <div className="user-info">
-                    <p>ADMIN SESSION</p>
-                    <span>Abhishek Singh</span>
+                <div className="sidebar-footer">
+                    <div className="user-badge">
+                        <small>ADMIN SESSION</small>
+                        <p>Abhishek Singh</p>
+                    </div>
                     <button className="logout-btn" onClick={() => {localStorage.removeItem('icms_user'); setUser(null);}}>Terminate Session</button>
                 </div>
             </aside>
 
-            <main className="content">
-                <header>
+            <main className="main-content">
+                <header className="content-header">
                     <h1>{activeTab.toUpperCase()} MANAGEMENT</h1>
-                    <div className="header-actions">
-                        <button onClick={exportPDF} className="action-btn">📄 Export PDF</button>
-                        <button onClick={sendMail} className="action-btn">📧 Send Mail</button>
-                        <span className="status-indicator">● LIVE_SYSTEM</span>
+                    <div className="header-tools">
+                        <button className="tool-btn">📄 Export PDF</button>
+                        <button className="tool-btn">📧 Send Mail</button>
+                        <span className="live-tag">● LIVE_SYSTEM</span>
                     </div>
                 </header>
 
-                {activeTab === 'inventory' && (
-                    <div className="view-container">
-                        <form onSubmit={addItem} className="glass-form">
-                            <input placeholder="Item Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required />
-                            <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} required />
-                            <input type="number" placeholder="Stock" value={newItem.stock} onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
-                            <button type="submit" className="add-btn">+ Add Item</button>
-                        </form>
-                        <div className="glass-card">
+                <div className="view-scroll-area">
+                    {activeTab === 'inventory' && (
+                        <>
+                            <form onSubmit={addItem} className="inventory-form">
+                                <input placeholder="Item Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+                                <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} required />
+                                <input type="number" placeholder="Stock" value={newItem.stock} onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
+                                <button type="submit" className="primary-btn">+ Add Item</button>
+                            </form>
+                            <div className="glass-panel">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr><th>NAME</th><th>CATEGORY</th><th>STOCK</th><th>ACTION</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {inventory.length > 0 ? inventory.map(item => (
+                                            <tr key={item.id}>
+                                                <td>{item.name}</td>
+                                                <td>{item.category}</td>
+                                                <td className="stock-val">{item.stock}</td>
+                                                <td><button onClick={() => deleteItem(item.id)} className="del-icon">🗑️</button></td>
+                                            </tr>
+                                        )) : <tr><td colSpan="4" className="empty-row">No inventory items found.</td></tr>}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+
+                    {activeTab === 'audit' && (
+                        <div className="glass-panel">
                             <table className="data-table">
-                                <thead>
-                                    <tr><th>NAME</th><th>CATEGORY</th><th>STOCK</th><th>ACTION</th></tr>
-                                </thead>
+                                <thead><tr><th>LOG_ID</th><th>USER</th><th>ACTION</th><th>TIMESTAMP</th></tr></thead>
                                 <tbody>
-                                    {inventory.map(item => (
-                                        <tr key={item.id}>
-                                            <td>{item.name}</td>
-                                            <td>{item.category}</td>
-                                            <td className="highlight-text">{item.stock}</td>
-                                            <td><button onClick={() => deleteItem(item.id)} className="icon-btn">🗑️</button></td>
+                                    {auditLogs.length > 0 ? auditLogs.map(log => (
+                                        <tr key={log.id}>
+                                            <td>{log.id}</td>
+                                            <td>{log.user}</td>
+                                            <td>{log.action}</td>
+                                            <td className="time-col">{log.timestamp}</td>
                                         </tr>
-                                    ))}
+                                    )) : <tr><td colSpan="4" className="empty-row">No audit history recorded.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {activeTab === 'audit' && (
-                    <div className="glass-card">
-                        <table className="data-table">
-                            <thead><tr><th>ID</th><th>USER</th><th>ACTION</th><th>TIMESTAMP</th></tr></thead>
-                            <tbody>
-                                {auditLogs.map(log => (
-                                    <tr key={log.id}>
-                                        <td>{log.id}</td>
-                                        <td>{log.user}</td>
-                                        <td>{log.action}</td>
-                                        <td className="timestamp">{log.timestamp}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {(activeTab === 'reports' || activeTab === 'master') && (
-                    <div className="glass-card empty-msg">No system data available for {activeTab} yet.</div>
-                )}
+                    {(activeTab === 'reports' || activeTab === 'master') && (
+                        <div className="glass-panel centered-msg">
+                            <p>System is generating data for {activeTab}...</p>
+                        </div>
+                    )}
+                </div>
             </main>
         </div>
     );
