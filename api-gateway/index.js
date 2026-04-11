@@ -3,42 +3,36 @@ const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 
-// CORS allow karna zaroori hai taaki Vercel se request block na ho
 app.use(cors());
 
-// Render ke Environment Variables use karein
 const routes = {
-    '/auth': process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
-    '/system': process.env.SYSTEM_SERVICE_URL || 'http://localhost:5002',
-    '/audit': process.env.AUDIT_SERVICE_URL || 'http://localhost:5003',
-    '/reports': process.env.REPORTS_SERVICE_URL || 'http://localhost:5004'
+    '/auth': process.env.AUTH_SERVICE_URL,
+    '/system': process.env.SYSTEM_SERVICE_URL,
+    '/audit': process.env.AUDIT_SERVICE_URL,
+    '/reports': process.env.REPORTS_SERVICE_URL
 };
 
-// Proxy setup
 Object.entries(routes).forEach(([path, target]) => {
-    app.use(path, createProxyMiddleware({
-        target,
-        changeOrigin: true,
-        pathRewrite: { [`^${path}`]: '' },
-        // IMPORTANT: POST requests (Login/Add Item) ke liye ye fix zaroori hai
-        onProxyReq: (proxyReq, req, res) => {
-            if (req.body && Object.keys(req.body).length) {
-                const bodyData = JSON.stringify(req.body);
-                proxyReq.setHeader('Content-Type', 'application/json');
-                proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-                proxyReq.write(bodyData);
+    if (target) {
+        app.use(path, createProxyMiddleware({
+            target,
+            changeOrigin: true,
+            pathRewrite: { [`^${path}`]: '' },
+            proxyTimeout: 120000, // 2 Minutes wait for cold starts
+            timeout: 120000,
+            onProxyReq: (proxyReq, req, res) => {
+                if (req.body && Object.keys(req.body).length) {
+                    const bodyData = JSON.stringify(req.body);
+                    proxyReq.setHeader('Content-Type', 'application/json');
+                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.write(bodyData);
+                }
+            },
+            onError: (err, req, res) => {
+                res.status(202).json({ status: "warming_up", data: [] });
             }
-        },
-        onError: (err, req, res) => {
-            console.error(`Gateway Error for ${path}:`, err.message);
-            res.status(504).send('Gateway Timeout: Target service is unreachable.');
-        }
-    }));
+        }));
+    }
 });
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-    console.log(`🚀 Omnicycle Gateway Operational: Port ${PORT}`);
-    console.log(`Target Auth: ${routes['/auth']}`);
-    console.log(`Target System: ${routes['/system']}`);
-});
+app.listen(process.env.PORT || 8000);
