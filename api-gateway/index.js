@@ -5,25 +5,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Health Check (Browser mein check karne ke liye)
-app.get('/', (req, res) => res.status(200).send("Industrial CMS Gateway Live"));
+// FIXED: Base URL check
+app.get('/', (req, res) => res.send("Industrial CMS Gateway Active"));
 
-// 2. FIXED: Frontend issi route ko hit karega
+// FIXED: Route for all-data (Frontend isko hit karega)
 app.get('/all-data', (req, res) => {
-    console.log("Data request received");
-    res.status(200).json({
+    res.json({
         inventory: [
-            { id: 1, name: "Industrial Pump X1", category: "Machinery", stock: 12 },
-            { id: 2, name: "Steel Pipes 50mm", category: "Raw Material", stock: 45 },
-            { id: 3, name: "Logic Controller", category: "Electronics", stock: 8 }
+            { id: "IND-001", name: "Industrial Pump X1", category: "Machinery", stock: 12, status: "Active" },
+            { id: "IND-002", name: "Steel Pipes 50mm", category: "Raw Material", stock: 45, status: "In-Stock" },
+            { id: "IND-003", name: "Logic Controller", category: "Electronics", stock: 8, status: "Maintenance" }
         ],
         auditLogs: [
-            { id: "LOG-101", event: "Admin Login", user: "Abhishek Singh", timestamp: new Date() },
-            { id: "LOG-102", event: "Gateway Sync", user: "System", timestamp: new Date() }
+            { id: "L-1", event: "Admin Login", user: "Abhishek Singh", timestamp: new Date().toISOString() },
+            { id: "L-2", event: "Inventory Sync", user: "System", timestamp: new Date().toISOString() }
         ],
         metrics: { warehouses: 4, nodes: 12, uptime: "99.9%" }
     });
 });
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Gateway running on port ${PORT}`));
