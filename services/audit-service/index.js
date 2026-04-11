@@ -1,13 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
 app.use(express.json());
 
-let logs = [{ id: "LOG-01", user: "Abhisek Singh", action: "System Auth", timestamp: new Date() }];
-
-app.get('/logs', (req, res) => res.json(logs));
-app.post('/log', (req, res) => {
-    logs.unshift({ id: `LOG-${logs.length + 1}`, ...req.body, timestamp: new Date() });
-    res.sendStatus(201);
+app.get('/api/audit/logs', (req, res) => {
+    res.json([{ id: "L-01", event: "System Sync", operator: "Abhishek", time: new Date() }]);
 });
 
-app.listen(5003, () => console.log('📜 Audit Service: Port 5003'));
+const PORT = process.env.PORT || 5003;
+app.listen(PORT, () => console.log(`📜 Audit Service Online`));

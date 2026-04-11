@@ -1,14 +1,15 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
 app.use(express.json());
 
-const assets = [
-    { id: "TX-900", name: "Core Reactor A", status: "Stable/94%" },
-    { id: "TX-450", name: "Cooling Unit B", status: "Warning/62%" },
-    { id: "TX-102", name: "Power Grid C", status: "Critical/12%" }
-];
+app.get('/api/content/inventory', (req, res) => {
+    res.json([
+        { id: "IND-101", name: "Industrial Pump X1", category: "Machinery", stock: 12, status: "Active" },
+        { id: "IND-102", name: "Steel Pipes 50mm", category: "Raw Material", stock: 45, status: "In-Stock" }
+    ]);
+});
 
-// Gateway routes /assets/list -> this /list
-app.get('/list', (req, res) => res.json(assets));
-
-app.listen(5002, () => console.log('📦 Asset Service: Port 5002'));
+const PORT = process.env.PORT || 5002;
+app.listen(PORT, () => console.log(`📦 Content Service Online`));

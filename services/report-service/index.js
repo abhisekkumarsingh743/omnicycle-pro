@@ -1,15 +1,12 @@
 const express = require('express');
-const Redis = require('ioredis');
+const cors = require('cors');
 const app = express();
-const redis = new Redis();
-
+app.use(cors());
 app.use(express.json());
 
-app.post('/export', async (req, res) => {
-    const { type, email } = req.body;
-    const job = { type, targetEmail: email, timestamp: new Date() };
-    await redis.lpush('report_queue', JSON.stringify(job));
-    res.json({ message: "PDF generation started. Check email shortly." });
+app.get('/api/reports/metrics', (req, res) => {
+    res.json({ efficiency: "98.4%", uptime: "99.9%", activeNodes: 12 });
 });
 
-app.listen(5004, () => console.log('📊 Report Service: Port 5004'));
+const PORT = process.env.PORT || 5004;
+app.listen(PORT, () => console.log(`📊 Report Service: Port ${PORT}`));
