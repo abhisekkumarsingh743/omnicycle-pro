@@ -2,24 +2,29 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+// --- ZAROORI: Ye fixed CORS setup lagayein ---
+app.use(cors({
+    origin: '*', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
-// Sample Initial Data
+// In-Memory Data (Server restart par clear ho jayega, permanent ke liye baad mein DB use karein)
 let inventory = [
-    { id: 1, name: "Industrial Pump", category: "Machinery", stock: 12, status: "In Stock" },
-    { id: 2, name: "Steel Pipes", category: "Raw Material", stock: 45, status: "Low Stock" }
+    { id: 1, name: "Industrial Pump X1", category: "Machinery", stock: 12 },
+    { id: 2, name: "Steel Pipes 50mm", category: "Raw Material", stock: 45 }
 ];
 
-// GET: Inventory List fetch karne ke liye
+// GET: Inventory List
 app.get('/inventory', (req, res) => {
     res.json(inventory);
 });
 
-// POST: Naya Item Add karne ke liye
+// POST: Add New Item
 app.post('/inventory', (req, res) => {
     const newItem = {
-        id: Date.now(), // Unique ID ke liye timestamp
+        id: Date.now(), 
         ...req.body
     };
     inventory.push(newItem);
@@ -27,7 +32,7 @@ app.post('/inventory', (req, res) => {
     res.status(201).json(newItem);
 });
 
-// DELETE: Item hatane ke liye
+// DELETE: Remove Item
 app.delete('/inventory/:id', (req, res) => {
     const { id } = req.params;
     inventory = inventory.filter(item => item.id !== parseInt(id));
@@ -37,5 +42,5 @@ app.delete('/inventory/:id', (req, res) => {
 
 const PORT = process.env.PORT || 5005;
 app.listen(PORT, () => {
-    console.log(`System Service running on port ${PORT}`);
+    console.log(`System Service active on port ${PORT}`);
 });

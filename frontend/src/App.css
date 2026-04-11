@@ -1,158 +1,94 @@
-/* Base Theme */
-.dash-layout {
-    display: flex;
-    height: 100vh;
-    background: #050505;
-    color: #fff;
-    font-family: 'Inter', sans-serif;
+:root {
+  --bg-dark: #000000;
+  --bg-card: #0a0a0a;
+  --text-primary: #e0e0e0;
+  --primary: #a18e0d; /* Golden brown look */
+  --primary-hover: #c9b110;
+  --danger: #b22222;
+  --border-light: #1a1a1a;
+  --border-accent: #2c2c2c;
+  --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Sidebar Styling */
-.sidebar {
-    width: 260px;
-    border-right: 1px solid #111;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    background: #080808;
+body, html, #root {
+  margin: 0; padding: 0; height: 100%;
+  font-family: var(--font-main);
+  background: var(--bg-dark); color: var(--text-primary);
 }
 
-.logo-small {
-    color: #0070f3;
-    font-weight: bold;
-    font-size: 22px;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-}
+/* App Containers */
+.app { display: flex; height: 100vh; width: 100vw; }
 
-.nav-item {
-    padding: 15px;
-    cursor: pointer;
-    border-radius: 12px;
-    color: #666;
-    margin-bottom: 5px;
-    transition: 0.3s;
+/* Login (Pichle error se different approach) */
+.login-view { align-items: center; justify-content: center; background: url('data:image/svg+xml,...'); }
+.login-box { 
+  background: var(--bg-card); padding: 50px; border-radius: 12px;
+  box-shadow: 0 0 10px rgba(161, 142, 13, 0.2); text-align: center;
 }
+.login-box h1 { margin-bottom: 30px; font-weight: 300; }
+.login-box input { display: block; width: 300px; margin: 15px auto; }
 
-.nav-item.active {
-    color: #fff;
-    background: #111;
-}
+/* Dashboard Layout */
+.dashboard-view { display: grid; grid-template-columns: 250px 1fr; }
 
-.nav-item:hover {
-    background: #161616;
+/* Sidebar */
+.main-sidebar { 
+  background: #050505; padding: 30px 20px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-right: 1px solid var(--border-light);
 }
+.main-sidebar h2 { color: var(--primary); text-align: center; font-weight: 400; }
+.main-sidebar nav button {
+  display: block; width: 100%; text-align: left; padding: 15px; margin: 10px 0;
+  background: none; border: none; color: #888; border-radius: 8px; font-size: 16px;
+}
+.main-sidebar nav button.active { background: #111; color: var(--primary); font-weight: bold; }
+.main-sidebar nav button:hover { background: #0c0c0c; }
+.terminate-btn { background: #1a1a1a; color: #888; margin-top: auto; }
 
-/* Content Area */
-.main-content {
-    flex: 1;
-    padding: 50px;
-    overflow-y: auto;
-}
+/* Main Content */
+.main-content { padding: 40px; overflow-y: auto; }
+.main-content header { margin-bottom: 30px; }
+.main-content h1 { font-weight: 300; margin-top: 0; margin-bottom: 20px; }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
+/* Fixed the broken Add Bar */
+.add-item-bar {
+  display: grid;
+  grid-template-columns: 2fr 1fr 80px 100px;
+  gap: 15px;
+  background: var(--bg-card);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border-accent);
 }
+.add-item-bar input { margin: 0; padding: 12px; }
 
-.pulse {
-    color: #00ff00;
-    font-size: 12px;
-    font-weight: bold;
-    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+/* Buttons & Inputs */
+input {
+  background: #000;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 10px 15px;
+  border-radius: 6px;
 }
-
-/* Glassmorphism Card */
-.glass-card {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 30px;
-}
+button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 20px; transition: 0.2s; }
+.primary-btn, .add-btn { background: var(--primary); color: #000; font-weight: bold; width: 100%; }
+.add-btn { background: #2e7d32; color: #fff; font-weight: normal; }
+.primary-btn:hover { background: var(--primary-hover); }
+.add-btn:hover { background: #388e3c; }
 
 /* Table Styling */
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
+.table-wrapper { 
+  background: var(--bg-card); padding: 20px;
+  border-radius: 8px; border: 1px solid var(--border-accent);
 }
+.inventory-table { width: 100%; border-collapse: collapse; }
+.inventory-table th, .inventory-table td { text-align: left; padding: 18px; border-bottom: 1px solid var(--border-light); }
+.inventory-table th { color: var(--primary); text-transform: uppercase; font-size: 14px; }
+.inventory-table tr:hover { background: #0e0e0e; }
+.stock-count { font-weight: bold; color: #fff; }
 
-.custom-table th {
-    padding: 12px;
-    color: #888;
-    border-bottom: 1px solid #222;
-}
-
-.custom-table td {
-    padding: 15px;
-    border-bottom: 1px solid #111;
-}
-
-/* User & Session Footer */
-.user-badge {
-    margin-top: auto;
-    padding: 20px;
-    background: #111;
-    border-radius: 12px;
-    border: 1px solid #222;
-}
-
-.logout-btn {
-    margin-top: 15px;
-    background: transparent;
-    border: 1px solid #331111;
-    color: #ff4444;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.logout-btn:hover {
-    background: #220000;
-}
-
-/* Auth Page Styling */
-.auth-page {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #000;
-}
-
-.login-card {
-    background: #0a0a0a;
-    padding: 50px;
-    border-radius: 24px;
-    border: 1px solid #222;
-    text-align: center;
-    width: 350px;
-}
-
-.login-input {
-    width: 100%;
-    padding: 14px;
-    margin: 8px 0;
-    background: #000;
-    border: 1px solid #333;
-    color: #fff;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-
-.primary-btn {
-    width: 100%;
-    padding: 14px;
-    background: #0070f3;
-    border: none;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 8px;
-    margin-top: 15px;
-}
+/* Fixed Actions and Delete Button */
+.action-cell { text-align: center; width: 80px; }
+.delete-btn { background: #0e0e0e; border: 1px solid #1a1a1a; padding: 8px; }
+.delete-btn:hover { background: #1a1a1a; border-color: var(--danger); }

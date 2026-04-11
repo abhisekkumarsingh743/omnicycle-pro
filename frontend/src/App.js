@@ -7,13 +7,13 @@ const API = process.env.REACT_APP_API_URL;
 function App() {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('icms_user')));
     const [inventory, setInventory] = useState([]);
-    const [newItem, setNewItem] = useState({ name: '', category: '', stock: '', status: 'In Stock' });
+    const [newItem, setNewItem] = useState({ name: '', category: '', stock: '' });
     const [credentials, setCredentials] = useState({ email: '', password: '' });
 
-    // Data Load karne ke liye function
+    // --- Data Load Function ---
     const fetchInventory = async () => {
         try {
-            const res = await axios.get(`${API}/system/inventory`);
+            const res = await axios.get(`${API}/system/inventory`); // Gateway path match
             setInventory(res.data);
         } catch (err) { console.error("Fetch Error", err); }
     };
@@ -31,33 +31,38 @@ function App() {
         } catch (err) { alert("Invalid Credentials"); }
     };
 
-    // --- ADD ITEM FUNCTION ---
+    const handleTerminate = () => {
+        localStorage.removeItem('icms_user');
+        setUser(null);
+    };
+
+    // --- ADD FUNCTION ---
     const addItem = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${API}/system/inventory`, newItem);
-            setNewItem({ name: '', category: '', stock: '', status: 'In Stock' });
-            fetchInventory(); // List refresh karein
-        } catch (err) { alert("Add failed"); }
+            await axios.post(`${API}/system/inventory`, newItem); // CORS test for POST
+            setNewItem({ name: '', category: '', stock: '' }); // Reset form
+            fetchInventory(); // Refresh table
+        } catch (err) { alert("Add failed. Backend down?"); }
     };
 
-    // --- DELETE ITEM FUNCTION ---
+    // --- DELETE FUNCTION ---
     const deleteItem = async (id) => {
-        if (window.confirm("Kyu aap ise delete karna chahte hain?")) {
+        if (window.confirm("Bhai, use hamesha ke liye delete kar du?")) {
             try {
-                await axios.delete(`${API}/system/inventory/${id}`);
-                fetchInventory(); // List refresh karein
-            } catch (err) { alert("Delete failed"); }
+                await axios.delete(`${API}/system/inventory/${id}`); // CORS test for DELETE
+                fetchInventory(); // Refresh table
+            } catch (err) { alert("Delete failed. Check logs."); }
         }
     };
 
     if (!user) {
         return (
-            <div className="login-page">
-                <form onSubmit={handleLogin} className="login-card">
-                    <h2>OMNICYCLE LOGIN</h2>
-                    <input type="email" placeholder="Email" onChange={e => setCredentials({...credentials, email: e.target.value})} />
-                    <input type="password" placeholder="Password" onChange={e => setCredentials({...credentials, password: e.target.value})} />
+            <div className="app login-view">
+                <form onSubmit={handleLogin} className="login-box">
+                    <h1>OMNICYCLE PRO</h1>
+                    <input type="email" placeholder="Email" onChange={e => setCredentials({...credentials, email: e.target.value})} required />
+                    <input type="password" placeholder="Password" onChange={e => setCredentials({...credentials, password: e.target.value})} required />
                     <button type="submit" className="primary-btn">Initialize Session</button>
                 </form>
             </div>
@@ -65,17 +70,23 @@ function App() {
     }
 
     return (
-        <div className="dashboard-container">
-            <aside className="sidebar">
-                <h3>OMNICYCLE PRO</h3>
-                <button onClick={() => setUser(null)}>Terminate Session</button>
+        <div className="app dashboard-view">
+            <aside className="main-sidebar">
+                <h2>OMNICYCLE PRO</h2>
+                <nav>
+                    <button className="active">📦 Inventory</button>
+                    <button disabled>📊 Reports</button>
+                </nav>
+                <button onClick={handleTerminate} className="terminate-btn">Terminate Session</button>
             </aside>
 
             <main className="main-content">
                 <header>
-                    <h2>INVENTORY MANAGEMENT</h2>
-                    {/* ADD ITEM FORM */}
-                    <form onSubmit={addItem} className="add-form">
+                    <div className="title-row">
+                        <h1>Inventory Management</h1>
+                    </div>
+                    {/* ADD ITEM FORM (Pichli CSS error thi yahan) */}
+                    <form onSubmit={addItem} className="add-item-bar">
                         <input placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required />
                         <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} required />
                         <input type="number" placeholder="Stock" value={newItem.stock} onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
@@ -83,28 +94,30 @@ function App() {
                     </form>
                 </header>
 
-                <table className="inventory-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Stock</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {inventory.map(item => (
-                            <tr key={item.id}>
-                                <td>{item.name}</td>
-                                <td>{item.category}</td>
-                                <td>{item.stock}</td>
-                                <td>
-                                    <button onClick={() => deleteItem(item.id)} className="delete-btn">🗑️</button>
-                                </td>
+                <div className="table-wrapper">
+                    <table className="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th style={{textAlign: 'center'}}>Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {inventory.map(item => (
+                                <tr key={item.id}>
+                                    <td>{item.name}</td>
+                                    <td>{item.category}</td>
+                                    <td className="stock-count">{item.stock}</td>
+                                    <td className="action-cell">
+                                        <button onClick={() => deleteItem(item.id)} className="delete-btn">🗑️</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </main>
         </div>
     );
