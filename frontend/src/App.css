@@ -1,12 +1,25 @@
-/* Base Styles */
-:root { --accent: #a18e0d; --bg: #000; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
-body { margin: 0; background: var(--bg); color: #ccc; font-family: 'Segoe UI', sans-serif; }
+/* --- GLOBAL & THEME VARIABLES --- */
+:root { 
+    --accent: #a18e0d; 
+    --bg: #000; 
+    --glass: rgba(255, 255, 255, 0.03); 
+    --border: rgba(255, 255, 255, 0.1); 
+}
 
-/* Login Page Styling */
+body { 
+    margin: 0; 
+    background: var(--bg); 
+    color: #ccc; 
+    font-family: 'Segoe UI', sans-serif; 
+    overflow-x: hidden;
+}
+
+/* --- LOGIN PAGE STYLES --- */
 .login-page {
     height: 100vh; width: 100vw;
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(circle at center, #111 0%, #000 100%);
+    position: fixed; top: 0; left: 0; z-index: 9999;
 }
 
 .login-card {
@@ -15,8 +28,8 @@ body { margin: 0; background: var(--bg); color: #ccc; font-family: 'Segoe UI', s
     box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
 }
 
-.login-header h2 { color: var(--accent); margin: 0; letter-spacing: 4px; }
-.login-header p { font-size: 10px; color: #444; margin-bottom: 30px; }
+.login-header h2 { color: var(--accent); margin: 0; letter-spacing: 4px; font-size: 24px; }
+.login-header p { font-size: 10px; color: #444; margin-bottom: 30px; letter-spacing: 1px; }
 
 .input-group { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
 .input-group input {
@@ -28,21 +41,74 @@ body { margin: 0; background: var(--bg); color: #ccc; font-family: 'Segoe UI', s
 .login-btn {
     width: 100%; padding: 15px; background: var(--accent);
     border: none; color: #000; font-weight: bold; cursor: pointer;
-    border-radius: 6px; transition: 0.3s;
+    border-radius: 6px; transition: 0.3s; font-size: 14px;
 }
 .login-btn:hover { opacity: 0.8; transform: translateY(-2px); }
 
 .login-footer { margin-top: 25px; font-size: 9px; color: #333; letter-spacing: 1px; }
 
-/* Layout & Sidebar Fixes */
-.app-layout { display: flex; height: 100vh; }
-.sidebar { width: 260px; background: #050505; border-right: 1px solid var(--border); padding: 30px 15px; display: flex; flex-direction: column; }
-.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px; }
-.user-info p { color: #fff; margin: 5px 0; font-weight: bold; }
-.logout-btn { width: 100%; padding: 10px; background: #1a1a1a; color: #ff4d4d; border: 1px solid #333; border-radius: 4px; cursor: pointer; }
+/* --- DASHBOARD LAYOUT STYLES --- */
+.app-layout { display: flex; height: 100vh; width: 100vw; }
 
-/* Dashboard Tables */
-.glass-card { background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px); }
+.sidebar { 
+    width: 260px; background: #050505; 
+    border-right: 1px solid var(--border); 
+    display: flex; flex-direction: column; padding: 30px 15px;
+    flex-shrink: 0;
+}
+
+.brand { color: var(--accent); font-size: 20px; font-weight: bold; margin-bottom: 40px; text-align: center; letter-spacing: 2px; }
+
+.sidebar nav { display: flex; flex-direction: column; gap: 8px; }
+.sidebar nav button { 
+    width: 100%; text-align: left; padding: 14px; 
+    background: none; border: none; color: #666; 
+    cursor: pointer; border-radius: 8px; font-size: 14px;
+    transition: 0.2s;
+}
+.sidebar nav button.active { background: rgba(161, 142, 13, 0.1); color: var(--accent); }
+.sidebar nav button:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.02); }
+
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px; }
+.user-info small { color: #444; font-size: 10px; display: block; }
+.user-info p { color: #fff; margin: 4px 0 15px 0; font-weight: 500; font-size: 14px; }
+
+.logout-btn { 
+    width: 100%; padding: 10px; background: #1a0505; 
+    color: #ff4d4d; border: 1px solid #301010; 
+    border-radius: 6px; cursor: pointer; font-size: 12px;
+}
+
+/* --- MAIN CONTENT AREA --- */
+.content { flex: 1; padding: 40px; overflow-y: auto; background: #000; }
+
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
+header h1 { font-size: 24px; color: #fff; margin: 0; letter-spacing: 1px; }
+
+.header-btns { display: flex; gap: 12px; align-items: center; }
+.tool-btn { background: #111; border: 1px solid #222; color: #888; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.tool-btn:hover { border-color: #444; color: #fff; }
+
+.status-live { color: #2ecc71; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+.status-busy { color: #f1c40f; font-size: 11px; font-weight: bold; }
+
+/* --- COMPONENTS --- */
+.inventory-form { 
+    display: grid; grid-template-columns: 1fr 1fr 120px 100px; gap: 15px; 
+    background: var(--glass); padding: 20px; border-radius: 12px; 
+    border: 1px solid var(--border); margin-bottom: 30px; 
+}
+.inventory-form input { background: #000; border: 1px solid #222; padding: 12px; color: #fff; border-radius: 6px; }
+.inventory-form button { background: #2ecc71; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; color: #000; }
+
+.glass-card { background: var(--glass); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table th { color: var(--accent); text-align: left; padding: 12px; border-bottom: 1px solid #222; font-size: 12px; }
-.data-table td { padding: 15px 12px; border-bottom: 1px solid #111; }
+.data-table th { text-align: left; padding: 15px; color: var(--accent); border-bottom: 1px solid #222; font-size: 11px; letter-spacing: 1px; }
+.data-table td { padding: 18px 15px; border-bottom: 1px solid #111; font-size: 14px; color: #999; }
+.white-text { color: #fff !important; font-weight: 600; }
+
+.del-btn { background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; transition: 0.3s; }
+.del-btn:hover { opacity: 1; transform: scale(1.1); }
+
+.center-text { text-align: center; padding: 100px 0; color: #444; font-style: italic; }
