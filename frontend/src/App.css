@@ -1,41 +1,31 @@
-:root {
-    --gold: #a18e0d;
-    --bg: #000;
-    --card: rgba(255, 255, 255, 0.03);
-    --border: rgba(255, 255, 255, 0.1);
-}
-
+:root { --gold: #a18e0d; --bg: #000; --glass: rgba(255,255,255,0.03); --border: rgba(255,255,255,0.1); }
 body { margin: 0; background: var(--bg); color: #ccc; font-family: 'Inter', sans-serif; overflow: hidden; }
 
 /* LOGIN SCREEN */
-.login-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.login-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
 .login-card { width: 350px; padding: 40px; background: #080808; border: 1px solid var(--border); border-radius: 12px; text-align: center; }
-.login-input { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 15px; border-radius: 6px; }
+.login-card input { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 15px; border-radius: 6px; box-sizing: border-box; outline: none; }
+.login-card input:focus { border-color: var(--gold); }
 
-/* DASHBOARD LAYOUT */
-.dashboard { display: flex; height: 100vh; width: 100vw; }
-.sidebar { width: 260px; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px 15px; }
-.workspace { flex: 1; display: flex; flex-direction: column; background: #020202; overflow-y: auto; }
+/* DASHBOARD */
+.app-shell { display: flex; height: 100vh; width: 100vw; }
+.sidebar { width: 260px; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px 15px; box-sizing: border-box; }
+.main-view { flex: 1; display: flex; flex-direction: column; background: #020202; overflow-y: auto; }
 
-/* FIXED HEADER */
-.header { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 20px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100;
-}
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
 
-/* BUTTONS */
-.btn-gold { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-.btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
-.btn-outline:hover { background: var(--gold); color: #000; }
-
-.nav-item { width: 100%; text-align: left; padding: 12px; background: none; border: none; color: #555; cursor: pointer; border-radius: 6px; margin-bottom: 5px; font-size: 14px; }
+.nav-item { width: 100%; text-align: left; padding: 12px 18px; background: none; border: none; color: #555; cursor: pointer; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
 .nav-item.active { background: rgba(161, 142, 13, 0.1); color: var(--gold); border-left: 3px solid var(--gold); }
 
-/* GRID & CARDS */
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 30px; }
-.card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
+.btn-gold { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
+.btn-outline:hover { background: var(--gold); color: #000; }
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 40px; }
+.card { background: var(--glass); border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
 .card h4 { font-size: 11px; color: var(--gold); margin: 0 0 10px 0; text-transform: uppercase; }
 .card p { font-size: 32px; font-weight: bold; color: #fff; margin: 0; }
 
-.audit-pre { background: #080808; padding: 20px; border-radius: 8px; border: 1px solid var(--border); color: #00ff00; font-family: monospace; font-size: 13px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th { text-align: left; color: var(--gold); font-size: 11px; padding-bottom: 15px; border-bottom: 1px solid #222; }
+td { padding: 15px 0; border-bottom: 1px solid #111; font-size: 14px; }
