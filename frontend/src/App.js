@@ -2,38 +2,25 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const API = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API = process.env.REACT_APP_API_URL;
 
-const App = () => {
+function App() {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('icms_user')));
-    const [tab, setTab] = useState('inventory');
-    const [data, setData] = useState([]); // Default as empty array
-    const [masterRaw, setMasterRaw] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [inventory, setInventory] = useState([]);
+    const [newItem, setNewItem] = useState({ name: '', category: '', stock: '', status: 'In Stock' });
     const [credentials, setCredentials] = useState({ email: '', password: '' });
 
-    const isExplorer = window.location.pathname === '/backend-explorer';
+    // Data Load karne ke liye function
+    const fetchInventory = async () => {
+        try {
+            const res = await axios.get(`${API}/system/inventory`);
+            setInventory(res.data);
+        } catch (err) { console.error("Fetch Error", err); }
+    };
 
     useEffect(() => {
-        if (!user && !isExplorer) return;
-
-        let endpoint = '';
-        if (isExplorer || tab === 'system_monitor' || tab === 'reports') endpoint = '/system/all-data';
-        else if (tab === 'inventory') endpoint = '/system/inventory-only';
-        else if (tab === 'audit') endpoint = '/audit/logs';
-
-        axios.get(`${API}${endpoint}`)
-            .then(res => {
-                if (tab === 'system_monitor' || isExplorer || tab === 'reports') {
-                    setMasterRaw(res.data);
-                    // Agar reports/master tab hai toh inventory array nikaal kar set karein
-                    setData(res.data.inventory || []);
-                } else {
-                    setData(Array.isArray(res.data) ? res.data : []);
-                }
-            })
-            .catch(() => setData([]));
-    }, [tab, user, isExplorer]);
+        if (user) fetchInventory();
+    }, [user]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -44,94 +31,83 @@ const App = () => {
         } catch (err) { alert("Invalid Credentials"); }
     };
 
-    if (isExplorer) return (
-        <div style={{background: '#000', color: '#4ade80', padding: '20px', minHeight: '100vh', fontFamily: 'monospace'}}>
-            <h2>📂 CORE_BACKEND_EXPLORER_V1</h2>
-            <hr border="1" color="#333" />
-            <pre>{JSON.stringify(masterRaw, null, 4)}</pre>
-        </div>
-    );
+    // --- ADD ITEM FUNCTION ---
+    const addItem = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post(`${API}/system/inventory`, newItem);
+            setNewItem({ name: '', category: '', stock: '', status: 'In Stock' });
+            fetchInventory(); // List refresh karein
+        } catch (err) { alert("Add failed"); }
+    };
 
-    if (!user) return (
-        <div className="auth-page">
-            <div className="login-card">
-                <h2>OMNICYCLE LOGIN</h2>
-                <form onSubmit={handleLogin}>
-                    <input className="login-input" type="email" placeholder="Email" onChange={e => setCredentials({...credentials, email: e.target.value})} required />
-                    <input className="login-input" type="password" placeholder="Password" onChange={e => setCredentials({...credentials, password: e.target.value})} required />
-                    <button className="primary-btn" type="submit">Initialize Session</button>
+    // --- DELETE ITEM FUNCTION ---
+    const deleteItem = async (id) => {
+        if (window.confirm("Kyu aap ise delete karna chahte hain?")) {
+            try {
+                await axios.delete(`${API}/system/inventory/${id}`);
+                fetchInventory(); // List refresh karein
+            } catch (err) { alert("Delete failed"); }
+        }
+    };
+
+    if (!user) {
+        return (
+            <div className="login-page">
+                <form onSubmit={handleLogin} className="login-card">
+                    <h2>OMNICYCLE LOGIN</h2>
+                    <input type="email" placeholder="Email" onChange={e => setCredentials({...credentials, email: e.target.value})} />
+                    <input type="password" placeholder="Password" onChange={e => setCredentials({...credentials, password: e.target.value})} />
+                    <button type="submit" className="primary-btn">Initialize Session</button>
                 </form>
             </div>
-        </div>
-    );
+        );
+    }
 
     return (
-        <div className="dash-layout">
+        <div className="dashboard-container">
             <aside className="sidebar">
-                <div onClick={() => setTab('inventory')} className={`nav-item ${tab === 'inventory' ? 'active' : ''}`}>📦 Inventory</div>
-                <div onClick={() => setTab('audit')} className={`nav-item ${tab === 'audit' ? 'active' : ''}`}>📜 Audit Trail</div>
-                <div onClick={() => setTab('reports')} className={`nav-item ${tab === 'reports' ? 'active' : ''}`}>📊 Reports</div>
-                <div onClick={() => setTab('system_monitor')} className={`nav-item ${tab === 'system_monitor' ? 'active' : ''}`}>🖥️ Master Data</div>
-                
-                <div className="user-badge" style={{marginTop: 'auto', marginBottom: '10px'}}>
-                    <div style={{fontSize: '11px', color: '#888'}}>{user.role} SESSION</div>
-                    <div style={{fontWeight: 'bold'}}>{user.name}</div>
-                </div>
-                <button onClick={() => {localStorage.clear(); window.location.reload();}} className="logout-btn">Terminate Session</button>
+                <h3>OMNICYCLE PRO</h3>
+                <button onClick={() => setUser(null)}>Terminate Session</button>
             </aside>
 
             <main className="main-content">
-                <header className="header">
-                    <h1>{tab.toUpperCase()}</h1>
-                    <div className="pulse">● LIVE_SYSTEM</div>
+                <header>
+                    <h2>INVENTORY MANAGEMENT</h2>
+                    {/* ADD ITEM FORM */}
+                    <form onSubmit={addItem} className="add-form">
+                        <input placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+                        <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} required />
+                        <input type="number" placeholder="Stock" value={newItem.stock} onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
+                        <button type="submit" className="add-btn">+ Add Item</button>
+                    </form>
                 </header>
 
-                <div className="glass-card">
-                    {tab === 'system_monitor' ? (
-                        <div>
-                            <h3>Tabular View</h3>
-                            <table className="custom-table" style={{marginBottom: '20px'}}>
-                                <thead><tr><th>Item</th><th>Status</th></tr></thead>
-                                <tbody>
-                                    {Array.isArray(data) && data.map((item, i) => (
-                                        <tr key={i}><td>{item.name}</td><td>{item.status}</td></tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <h3>JSON Data</h3>
-                            <pre style={{background: '#000', padding: '15px', color: '#4ade80', borderRadius: '8px', textAlign: 'left'}}>
-                                {JSON.stringify(masterRaw, null, 4)}
-                            </pre>
-                        </div>
-                    ) : (
-                        <>
-                            <table className="custom-table">
-                                <thead><tr><th>Identifier</th><th>Description</th><th>Status/Time</th></tr></thead>
-                                <tbody>
-                                    {/* FIXED: Check if data is array before mapping */}
-                                    {Array.isArray(data) && data.length > 0 ? data.map((item, i) => (
-                                        <tr key={i}>
-                                            <td>{item.id || item.user}</td>
-                                            <td>{item.name || item.action}</td>
-                                            <td>{item.status || new Date(item.timestamp).toLocaleTimeString()}</td>
-                                        </tr>
-                                    )) : (
-                                        <tr><td colSpan="3">No system data available.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                            {tab === 'reports' && (
-                                <div style={{textAlign: 'center', marginTop: '30px'}}>
-                                    <button onClick={() => alert("PDF Dispatched")} className="primary-btn" style={{width: 'auto', marginRight: '10px'}}>Export PDF</button>
-                                    <button onClick={() => alert("Email Dispatched")} className="primary-btn" style={{width: 'auto', background: '#333'}}>Send Email</button>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
+                <table className="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {inventory.map(item => (
+                            <tr key={item.id}>
+                                <td>{item.name}</td>
+                                <td>{item.category}</td>
+                                <td>{item.stock}</td>
+                                <td>
+                                    <button onClick={() => deleteItem(item.id)} className="delete-btn">🗑️</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </main>
         </div>
     );
-};
+}
 
 export default App;

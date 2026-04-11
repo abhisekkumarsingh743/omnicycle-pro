@@ -1,31 +1,41 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-const INVENTORY_DB = [
-    { id: 'AST-001', name: 'Core Reactor A', status: 'Stable/94%' },
-    { id: 'AST-002', name: 'Cooling Unit B', status: 'Warning/62%' },
-    { id: 'AST-003', name: 'Power Grid C', status: 'Critical/12%' }
+// Sample Initial Data
+let inventory = [
+    { id: 1, name: "Industrial Pump", category: "Machinery", stock: 12, status: "In Stock" },
+    { id: 2, name: "Steel Pipes", category: "Raw Material", stock: 45, status: "Low Stock" }
 ];
 
-app.get('/all-data', async (req, res) => {
-    try {
-        const auditUrl = process.env.AUDIT_SERVICE_URL || 'http://localhost:5003';
-        const logs = await axios.get(`${auditUrl}/logs`);
-        res.json({
-            status: "SUCCESS",
-            inventory: INVENTORY_DB,
-            audit_trail: logs.data
-        });
-    } catch (err) {
-        res.json({ status: "PARTIAL", inventory: INVENTORY_DB, audit_trail: [] });
-    }
+// GET: Inventory List fetch karne ke liye
+app.get('/inventory', (req, res) => {
+    res.json(inventory);
 });
 
-app.get('/inventory-only', (req, res) => res.json(INVENTORY_DB));
+// POST: Naya Item Add karne ke liye
+app.post('/inventory', (req, res) => {
+    const newItem = {
+        id: Date.now(), // Unique ID ke liye timestamp
+        ...req.body
+    };
+    inventory.push(newItem);
+    console.log("Item Added:", newItem);
+    res.status(201).json(newItem);
+});
+
+// DELETE: Item hatane ke liye
+app.delete('/inventory/:id', (req, res) => {
+    const { id } = req.params;
+    inventory = inventory.filter(item => item.id !== parseInt(id));
+    console.log("Item Deleted ID:", id);
+    res.json({ message: "Item deleted successfully" });
+});
 
 const PORT = process.env.PORT || 5005;
-app.listen(PORT, () => console.log(`System Service on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`System Service running on port ${PORT}`);
+});
