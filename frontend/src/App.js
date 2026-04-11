@@ -6,32 +6,22 @@ const API = process.env.REACT_APP_API_URL;
 
 function App() {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('icms_user')));
-    const [data, setData] = useState([]); // Sabhi tabs ka data yahan rahega
+    const [inventory, setInventory] = useState([]);
+    const [auditLogs, setAuditLogs] = useState([]);
     const [activeTab, setActiveTab] = useState('inventory');
     const [newItem, setNewItem] = useState({ name: '', category: '', stock: '' });
     const [credentials, setCredentials] = useState({ email: '', password: '' });
 
-    // --- GLOBAL FETCH FUNCTION ---
     const fetchData = async () => {
         try {
-            let endpoint = '';
-            if (activeTab === 'inventory') endpoint = '/system/inventory';
-            else if (activeTab === 'audit') endpoint = '/audit/logs';
-            else if (activeTab === 'reports') endpoint = '/reports/data';
-            else if (activeTab === 'master') endpoint = '/system/master';
-
-            const res = await axios.get(`${API}${endpoint}`);
-            setData(Array.isArray(res.data) ? res.data : []);
-        } catch (err) { 
-            console.error("Fetch Error:", err);
-            setData([]); // Error aane par empty array set karein taaki crash na ho
-        }
+            const invRes = await axios.get(`${API}/system/inventory`);
+            setInventory(invRes.data);
+            const auditRes = await axios.get(`${API}/audit/logs`);
+            setAuditLogs(auditRes.data);
+        } catch (err) { console.error("Fetch Error", err); }
     };
 
-    // Tab change hone par ya login hone par data fetch karein
-    useEffect(() => {
-        if (user) fetchData();
-    }, [user, activeTab]);
+    useEffect(() => { if (user) fetchData(); }, [user]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -47,18 +37,21 @@ function App() {
         try {
             await axios.post(`${API}/system/inventory`, newItem);
             setNewItem({ name: '', category: '', stock: '' });
-            fetchData(); // List refresh
+            fetchData();
         } catch (err) { alert("Add failed"); }
     };
 
     const deleteItem = async (id) => {
-        if (window.confirm("Confirm delete?")) {
+        if (window.confirm("Delete this item?")) {
             try {
                 await axios.delete(`${API}/system/inventory/${id}`);
-                fetchData(); // List refresh
+                fetchData();
             } catch (err) { alert("Delete failed"); }
         }
     };
+
+    const exportPDF = () => alert("Generating PDF Report...");
+    const sendMail = () => alert("Sending Report to Admin...");
 
     if (!user) {
         return (
@@ -92,14 +85,18 @@ function App() {
 
             <main className="content">
                 <header>
-                    <h1>{activeTab.toUpperCase()}</h1>
-                    <div className="status-indicator">● LIVE_SYSTEM</div>
+                    <h1>{activeTab.toUpperCase()} MANAGEMENT</h1>
+                    <div className="header-actions">
+                        <button onClick={exportPDF} className="action-btn">📄 Export PDF</button>
+                        <button onClick={sendMail} className="action-btn">📧 Send Mail</button>
+                        <span className="status-indicator">● LIVE_SYSTEM</span>
+                    </div>
                 </header>
 
-                {activeTab === 'inventory' ? (
-                    <div className="inventory-view">
-                        <form onSubmit={addItem} className="add-bar">
-                            <input placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+                {activeTab === 'inventory' && (
+                    <div className="view-container">
+                        <form onSubmit={addItem} className="glass-form">
+                            <input placeholder="Item Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required />
                             <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} required />
                             <input type="number" placeholder="Stock" value={newItem.stock} onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
                             <button type="submit" className="add-btn">+ Add Item</button>
@@ -110,26 +107,40 @@ function App() {
                                     <tr><th>NAME</th><th>CATEGORY</th><th>STOCK</th><th>ACTION</th></tr>
                                 </thead>
                                 <tbody>
-                                    {data.map(item => (
+                                    {inventory.map(item => (
                                         <tr key={item.id}>
                                             <td>{item.name}</td>
                                             <td>{item.category}</td>
-                                            <td>{item.stock}</td>
-                                            <td><button onClick={() => deleteItem(item.id)} className="del-btn">🗑️</button></td>
+                                            <td className="highlight-text">{item.stock}</td>
+                                            <td><button onClick={() => deleteItem(item.id)} className="icon-btn">🗑️</button></td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                ) : (
+                )}
+
+                {activeTab === 'audit' && (
                     <div className="glass-card">
-                        {data.length > 0 ? (
-                            <pre className="raw-data">{JSON.stringify(data, null, 2)}</pre>
-                        ) : (
-                            <div className="empty">No system data available for {activeTab} yet.</div>
-                        )}
+                        <table className="data-table">
+                            <thead><tr><th>ID</th><th>USER</th><th>ACTION</th><th>TIMESTAMP</th></tr></thead>
+                            <tbody>
+                                {auditLogs.map(log => (
+                                    <tr key={log.id}>
+                                        <td>{log.id}</td>
+                                        <td>{log.user}</td>
+                                        <td>{log.action}</td>
+                                        <td className="timestamp">{log.timestamp}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
+                )}
+
+                {(activeTab === 'reports' || activeTab === 'master') && (
+                    <div className="glass-card empty-msg">No system data available for {activeTab} yet.</div>
                 )}
             </main>
         </div>
