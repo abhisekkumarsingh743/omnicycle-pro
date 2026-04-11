@@ -2,107 +2,106 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const API_BASE = "https://omnicycle-pro.onrender.com";
+const API = "https://omnicycle-pro.onrender.com";
 
 function App() {
-  const [session, setSession] = useState(JSON.parse(localStorage.getItem('session')));
-  const [view, setView] = useState('inventory');
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(JSON.parse(localStorage.getItem('icms_user')));
+    const [activeTab, setActiveTab] = useState('inventory');
+    const [data, setData] = useState({ inventory: [], auditLogs: [], metrics: {} });
+    const [loading, setLoading] = useState(false);
 
-  // Auto-Sync for Live System Status
-  useEffect(() => {
-    if (!session) return;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${API_BASE}/all-data`);
-        setData(res.data || []);
-      } catch (err) {
-        console.error("Gateway Sync Failed - Using Local Cache");
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, [session, view]);
+    // Sync Data
+    useEffect(() => {
+        if (!user) return;
+        const sync = async () => {
+            setLoading(true);
+            try {
+                const res = await axios.get(`${API}/all-data`);
+                setData(res.data);
+            } catch (e) { console.warn("Backend link error - Check Render Logs"); }
+            setLoading(false);
+        };
+        sync();
+    }, [user, activeTab]);
 
-  // Handle Session Initialization
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const newUser = { name: "Abhishek Singh", role: "ADMIN_SESSION" };
-    setSession(newUser);
-    localStorage.setItem('session', JSON.stringify(newUser));
-  };
-
-  if (!session) return (
-    <div className="login-overlay">
-      <div className="login-box">
-        <h2 style={{color: 'var(--gold)', letterSpacing: '4px'}}>OMNICYCLE</h2>
-        <p style={{fontSize: '11px', color: '#666', marginBottom: '30px'}}>INDUSTRIAL CMS PRO V2.0</p>
-        <form onSubmit={handleLogin}>
-          <input className="stat-card" style={{width: '100%', marginBottom: '15px', padding: '12px', background: '#000'}} placeholder="Terminal ID / Email" required />
-          <button className="btn-action" style={{width: '100%', padding: '14px', background: 'var(--gold)', color: '#000', fontWeight: 'bold'}}>INITIALIZE SESSION</button>
-        </form>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="dashboard-layout">
-      <aside className="sidebar">
-        <h3 style={{color: 'var(--gold)', marginBottom: '40px'}}>OMNICYCLE PRO</h3>
-        <nav style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-          <button onClick={() => setView('inventory')} style={{color: view==='inventory'?'var(--gold)':'#555'}} className="btn-action">📦 Inventory</button>
-          <button onClick={() => setView('reports')} style={{color: view==='reports'?'var(--gold)':'#555'}} className="btn-action">📊 Reports</button>
-          <button onClick={() => setView('audit')} style={{color: view==='audit'?'var(--gold)':'#555'}} className="btn-action">📜 Audit Trail</button>
-          <button onClick={() => setView('master')} style={{color: view==='master'?'var(--gold)':'#555'}} className="btn-action">📁 Master Data</button>
-        </nav>
-        <div style={{marginTop: 'auto', borderTop: '1px solid #222', paddingTop: '20px'}}>
-          <p style={{fontSize: '12px', color: '#999'}}>{session.role}</p>
-          <p style={{fontWeight: 'bold'}}>{session.name}</p>
-          <button onClick={() => {localStorage.clear(); window.location.reload();}} style={{color: '#ff4d4d', marginTop: '10px', width: '100%'}} className="btn-action">Terminate Session</button>
+    if (!user) return (
+        <div className="login-screen">
+            <div className="login-card">
+                <h2 style={{color: '#a18e0d', letterSpacing: '4px'}}>OMNICYCLE</h2>
+                <p style={{fontSize: '10px', color: '#444', marginBottom: '30px'}}>ADMIN_ACCESS_REQUIRED</p>
+                <button className="action-btn" style={{width: '100%', padding: '15px', background: '#a18e0d', color: '#000'}}
+                    onClick={() => {
+                        const u = { name: "Abhishek Singh", role: "Super Admin" };
+                        localStorage.setItem('icms_user', JSON.stringify(u));
+                        setUser(u);
+                    }}>INITIALIZE SESSION</button>
+            </div>
         </div>
-      </aside>
+    );
 
-      <main className="main-stage">
-        <header className="view-header">
-          <h2 style={{margin: 0, textTransform: 'uppercase'}}>{view} Management</h2>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <button className="btn-action">📄 Export PDF</button>
-            <button className="btn-action">📧 Send Mail</button>
-            <span style={{marginLeft: '20px', fontSize: '10px', color: loading ? '#f1c40f' : '#2ecc71'}}>
-              ● {loading ? 'SYNCING_GATEWAY' : 'LIVE_SYSTEM'}
-            </span>
-          </div>
-        </header>
+    return (
+        <div className="app-container">
+            <aside className="sidebar">
+                <div style={{color: '#a18e0d', fontWeight: '900', fontSize: '18px', marginBottom: '40px', paddingLeft: '10px'}}>OMNICYCLE PRO</div>
+                <nav style={{flex: 1}}>
+                    <button className={`nav-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>📦 Inventory</button>
+                    <button className={`nav-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>📊 Reports</button>
+                    <button className={`nav-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>📜 Audit Trail</button>
+                    <button className={`nav-item ${activeTab === 'master' ? 'active' : ''}`} style={{background:'none', border:'none', width:'100%', textAlign:'left', padding:'12px', cursor:'pointer', color: activeTab==='master'?'#a18e0d':'#555'}} onClick={() => setActiveTab('master')}>📁 Master Data</button>
+                </nav>
+                <div style={{borderTop: '1px solid #111', paddingTop: '20px'}}>
+                    <p style={{fontSize: '13px', color: '#bbb', margin: '0 0 5px 10px'}}>{user.name}</p>
+                    <button onClick={() => {localStorage.clear(); window.location.reload();}} style={{color: '#e74c3c', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', paddingLeft: '10px'}}>TERMINATE SESSION</button>
+                </div>
+            </aside>
 
-        <div style={{padding: '40px'}}>
-          {view === 'inventory' && (
-            <div className="stat-card">
-              <h4>Current Inventory Levels</h4>
-              {/* Table logic here */}
-              <p>System is generating data for {view}...</p>
-            </div>
-          )}
+            <main className="workspace">
+                <header className="work-header">
+                    <h2 style={{margin: 0, color: '#fff'}}>{activeTab.toUpperCase()}</h2>
+                    <div className="header-actions">
+                        <button className="action-btn">📄 Export PDF</button>
+                        <button className="action-btn">📧 Send Mail</button>
+                        <span style={{color: loading ? '#f1c40f' : '#2ecc71', fontSize: '10px', marginLeft: '15px'}}>● {loading ? 'SYNCING' : 'LIVE'}</span>
+                    </div>
+                </header>
 
-          {view === 'reports' && (
-            <div className="stat-card">
-              <h4>System Reports Analytics</h4>
-              <p style={{color: '#666'}}>No critical anomalies detected in the last 24 hours.</p>
-            </div>
-          )}
+                <div className="content-body">
+                    {activeTab === 'inventory' && (
+                        <div className="grid-3">
+                            <div className="card-glass" style={{gridColumn: 'span 3'}}>
+                                <h4>Inventory Table</h4>
+                                <p style={{fontSize: '14px', color: '#666'}}>System initialized. {data.inventory?.length || 0} items found.</p>
+                            </div>
+                        </div>
+                    )}
 
-          {view === 'master' && (
-            <div className="grid-container">
-              <div className="stat-card"><h4>Active Warehouses</h4><p style={{fontSize: '32px'}}>04</p></div>
-              <div className="stat-card"><h4>Connected Nodes</h4><p style={{fontSize: '32px'}}>12</p></div>
-              <div className="stat-card"><h4>Uptime</h4><p style={{fontSize: '32px'}}>99.9%</p></div>
-            </div>
-          )}
+                    {activeTab === 'reports' && (
+                        <div className="grid-3">
+                            <div className="card-glass"><h4>Efficiency</h4><p>98.4%</p></div>
+                            <div className="card-glass"><h4>Daily Reports</h4><p>24</p></div>
+                            <div className="card-glass"><h4>Status</h4><p>Normal</p></div>
+                        </div>
+                    )}
+
+                    {activeTab === 'audit' && (
+                        <div style={{padding: '40px'}}>
+                            <div className="card-glass" style={{fontFamily: 'monospace', color: '#00ff00', fontSize: '13px'}}>
+                                <pre>{JSON.stringify(data.auditLogs, null, 4)}</pre>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'master' && (
+                        <div className="grid-3">
+                            <div className="card-glass"><h4>Warehouses</h4><p>{data.metrics?.warehouses || 0}</p></div>
+                            <div className="card-glass"><h4>Nodes</h4><p>{data.metrics?.nodes || 0}</p></div>
+                            <div className="card-glass"><h4>Uptime</h4><p>{data.metrics?.uptime || '0%'}</p></div>
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
-      </main>
-    </div>
-  );
+    );
 }
 
 export default App;
