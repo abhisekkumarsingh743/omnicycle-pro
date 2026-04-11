@@ -7,8 +7,8 @@ app.use(express.json());
 
 // Professional Test Credentials
 const USERS = [
-    { email: 'admin@icms.com', password: 'password123', role: 'ADMIN', name: 'Abhisek Singh' },
-    { email: 'user@icms.com', password: 'user123', role: 'USER', name: 'Niranjan Singh' }
+    { email: 'admin@icms.com', password: 'password123', role: 'ADMIN', name: 'Abhishek Singh as Admin' },
+    { email: 'user@icms.com', password: 'user123', role: 'USER', name: 'Abhishek Singh as User' }
 ];
 
 app.post('/login', (req, res) => {
