@@ -1,25 +1,30 @@
-:root { --gold: #a18e0d; --bg: #000; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
+:root { --gold: #a18e0d; --bg: #000; --border: rgba(255, 255, 255, 0.1); --glass: rgba(255, 255, 255, 0.02); }
 body { margin: 0; background: var(--bg); color: #ccc; font-family: 'Inter', sans-serif; overflow: hidden; }
-
-/* Login Box Fix */
-.login-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.login-card { width: 350px; padding: 40px; background: #080808; border: 1px solid var(--border); border-radius: 12px; text-align: center; }
-.login-input { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 15px; border-radius: 6px; box-sizing: border-box; outline: none; }
 
 /* Dashboard Shell */
 .app-container { display: flex; height: 100vh; width: 100vw; }
 .sidebar { width: 260px; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; }
-.main-stage { flex: 1; display: flex; flex-direction: column; background: #020202; overflow-y: auto; }
+.workspace { flex: 1; display: flex; flex-direction: column; background: #020202; overflow-y: auto; }
 
-/* Fixed Header */
-.work-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.8); position: sticky; top: 0; z-index: 100; }
+/* Header & Nav */
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
+.nav-btn { width: 100%; text-align: left; padding: 12px; background: none; border: none; color: #555; cursor: pointer; border-radius: 6px; margin-bottom: 5px; font-size: 14px; }
+.nav-btn.active { background: rgba(161, 142, 13, 0.1); color: var(--gold); border-left: 3px solid var(--gold); }
 
 /* Table Styling */
-.data-table-container { padding: 30px; }
-.data-table { width: 100%; border-collapse: collapse; background: var(--glass); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-.data-table th { background: #080808; color: var(--gold); text-align: left; padding: 15px; font-size: 11px; text-transform: uppercase; }
-.data-table td { padding: 15px; border-bottom: 1px solid #111; font-size: 14px; color: #999; }
-.data-table tr:hover { background: rgba(161, 142, 13, 0.05); }
+.table-wrap { padding: 30px; }
+.data-table { width: 100%; border-collapse: collapse; background: var(--glass); border: 1px solid var(--border); }
+.data-table th { background: #080808; color: var(--gold); text-align: left; padding: 15px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.data-table td { padding: 15px; border-bottom: 1px solid #111; font-size: 13px; }
 
-.btn-gold { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-.btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
+/* Master Data Cards */
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 30px; }
+.m-card { background: var(--glass); border: 1px solid var(--border); padding: 25px; border-radius: 12px; }
+.m-card h4 { font-size: 10px; color: var(--gold); margin: 0 0 10px 0; text-transform: uppercase; }
+.m-card p { font-size: 32px; font-weight: bold; color: #fff; margin: 0; }
+
+/* Login */
+.login-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.login-box { width: 350px; padding: 40px; background: #080808; border: 1px solid var(--border); border-radius: 12px; text-align: center; }
+.login-input { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; margin-bottom: 15px; border-radius: 6px; outline: none; }
+.btn-gold { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
