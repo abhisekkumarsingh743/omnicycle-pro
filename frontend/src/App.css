@@ -20,7 +20,7 @@ body { margin: 0; background: var(--bg); color: #e0e0e0; font-family: 'Inter', s
 .n-btn:hover { color: white; background: var(--glass); }
 .n-btn.active { background: rgba(255,215,0,0.1); color: var(--gold); border-left: 3px solid var(--gold); }
 
-/* Updated User Info Section */
+/* User Info Section */
 .nav-user { margin-top: auto; padding: 20px; background: var(--glass); border-radius: 16px; border: 1px solid var(--border); }
 .u-label { font-size: 0.6rem; color: #555; margin: 0; letter-spacing: 1px; font-weight: 800; }
 .u-name { font-size: 0.85rem; font-weight: 700; color: var(--gold); margin: 4px 0; letter-spacing: 0.5px; }
@@ -41,6 +41,10 @@ body { margin: 0; background: var(--bg); color: #e0e0e0; font-family: 'Inter', s
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; color: var(--gold); padding: 15px; border-bottom: 2px solid #111; font-size: 0.75rem; text-transform: uppercase; }
 td { padding: 15px; border-bottom: 1px solid #111; font-size: 0.85rem; color: #ccc; }
+
+/* Delete Button Styling */
+.delete-btn { background: transparent; border: 1px solid rgba(255, 77, 77, 0.3); color: #ff4d4d; padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
+.delete-btn:hover { background: #ff4d4d; color: white; border-color: #ff4d4d; box-shadow: 0 0 10px rgba(255, 77, 77, 0.4); }
 
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; }
 .modal-card { background: #111; padding: 35px; border-radius: 20px; border: 1px solid var(--border); width: 350px; }

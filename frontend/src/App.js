@@ -26,6 +26,18 @@ function App() {
     } catch (err) { console.error("Sync Error"); }
   };
 
+  // Naya Delete Logic
+  const deleteItem = async (id) => {
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      try {
+        await axios.delete(`${API_BASE}/delete-item/${id}`);
+        fetchData(); // UI refresh karne ke liye
+      } catch (err) {
+        alert("Delete Failed: Backend connectivity issue.");
+      }
+    }
+  };
+
   const exportToPDF = () => {
     try {
       const doc = new jsPDF();
@@ -77,7 +89,6 @@ function App() {
           <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
         </nav>
         
-        {/* Updated Side Panel User Info */}
         <div className="nav-user">
           <div className="user-info">
             <p className="u-label">LOGGED AS:</p>
@@ -105,10 +116,18 @@ function App() {
                 <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
               </div>
               <table>
-                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr></thead>
+                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th><th>ACTION</th></tr></thead>
                 <tbody>
                   {data.inventory.map(item => (
-                    <tr key={item.id}><td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td></tr>
+                    <tr key={item.id}>
+                      <td className="mono">{item.id}</td>
+                      <td>{item.name}</td>
+                      <td>{item.stock}</td>
+                      <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                      <td>
+                        <button className="delete-btn" onClick={() => deleteItem(item.id)}>🗑️</button>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
