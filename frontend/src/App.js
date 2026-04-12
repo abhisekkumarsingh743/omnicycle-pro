@@ -2,125 +2,65 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
-// RENDER URL (Confirm this is correct in your Render Dashboard)
-const API_URL = "https://omnicycle-pro.onrender.com";
+const API_URL = process.env.REACT_APP_GATEWAY_URL || "http://localhost:8000";
 
 function App() {
-  const [auth, setAuth] = useState(JSON.parse(localStorage.getItem('icms_auth')));
-  const [activeTab, setActiveTab] = useState('inventory');
-  const [db, setDb] = useState({ inventory: [], auditLogs: [], metrics: {} });
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [auth, setAuth] = useState(JSON.parse(localStorage.getItem('icms_v6')));
+  const [tab, setTab] = useState('inventory');
+  const [data, setData] = useState({ inventory: [], auditLogs: [], metrics: {} });
 
-  // Data Fetching Logic
   useEffect(() => {
-    if (!auth) return;
-    const fetchData = async () => {
-      setIsSyncing(true);
-      try {
-        const res = await axios.get(`${API_URL}/all-data`);
-        setDb(res.data);
-      } catch (err) {
-        console.error("System offline or 404. Check Render URL.");
-      }
-      setIsSyncing(false);
-    };
-    fetchData();
-  }, [auth, activeTab]);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const user = { name: "Abhishek Singh", role: "MASTER_ADMIN" };
-    localStorage.setItem('icms_auth', JSON.stringify(user));
-    setAuth(user);
-  };
+    if (auth) {
+      axios.get(`${API_URL}/all-data`).then(res => setData(res.data)).catch(e => console.log("Sync Error"));
+    }
+  }, [auth, tab]);
 
   if (!auth) return (
-    <div className="login-overlay">
-      <div className="login-panel">
-        <h2 className="gold-title">OMNICYCLE</h2>
-        <p className="sub-title">INDUSTRIAL CMS PRO V6.0</p>
-        <form onSubmit={handleLogin}>
-          <input className="input-field" type="email" placeholder="Terminal ID" required />
-          <input className="input-field" type="password" placeholder="Access Code" required />
-          <button type="submit" className="primary-btn">INITIALIZE SYSTEM</button>
-        </form>
+    <div className="login-page">
+      <div className="login-card">
+        <h1>OMNICYCLE</h1>
+        <button onClick={() => {
+          const user = {name: "Abhishek Singh", role: "ADMIN"};
+          localStorage.setItem('icms_v6', JSON.stringify(user));
+          setAuth(user);
+        }}>DEMO LOGIN</button>
       </div>
     </div>
   );
 
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <h3 className="gold-text">OMNICYCLE PRO</h3>
-        <nav className="menu">
-          <button className={`menu-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>📦 Inventory</button>
-          <button className={`menu-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>📊 Reports</button>
-          <button className={`menu-btn ${activeTab === 'master' ? 'active' : ''}`} onClick={() => setActiveTab('master')}>📁 Master Data</button>
-          <button className={`menu-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>📜 Audit Trail</button>
-        </nav>
-        <div className="footer-profile">
-          <p className="tag">SUPER_ADMIN</p>
-          <p className="name">{auth.name}</p>
-          <button className="logout-link" onClick={() => {localStorage.clear(); window.location.reload();}}>Terminate Session</button>
-        </div>
-      </aside>
-
-      <main className="content-area">
-        <header className="top-bar">
-          <h2>{activeTab.toUpperCase()}</h2>
-          <div className="actions">
-            <button className="btn-outline">📄 PDF</button>
-            <button className="btn-outline">📧 Mail</button>
-            <span className={`status ${isSyncing ? 'sync' : 'online'}`}>● {isSyncing ? 'SYNCING' : 'ONLINE'}</span>
-          </div>
-        </header>
-
-        <div className="workspace">
-          {activeTab === 'inventory' && (
-            <div className="table-container">
-              <table className="main-table">
-                <thead><tr><th>REF_ID</th><th>ITEM</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th></tr></thead>
-                <tbody>
-                  {db.inventory?.map((item, i) => (
-                    <tr key={i}><td>{item.id}</td><td>{item.name}</td><td>{item.category}</td><td>{item.stock}</td><td>{item.status}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {activeTab === 'reports' && (
-            <div className="metrics-grid">
-              <div className="card"><h4>Efficiency</h4><p>{db.metrics?.efficiency || '97.2%'}</p></div>
-              <div className="card"><h4>Active Nodes</h4><p>{db.metrics?.nodes || 12}</p></div>
-              <div className="card"><h4>Warehouse Capacity</h4><p>82%</p></div>
-            </div>
-          )}
-
-          {activeTab === 'master' && (
-            <div className="metrics-grid">
-              <div className="card"><h4>Warehouses</h4><p>{db.metrics?.warehouses || 4}</p></div>
-              <div className="card"><h4>Active Staff</h4><p>{db.metrics?.activeStaff || 32}</p></div>
-              <div className="card"><h4>Uptime</h4><p>{db.metrics?.uptime || '99.9%'}</p></div>
-            </div>
-          )}
-
-          {activeTab === 'audit' && (
-            <div className="table-container">
-              <table className="main-table">
-                <thead><tr><th>LOG_ID</th><th>EVENT</th><th>OPERATOR</th><th>TIMESTAMP</th></tr></thead>
-                <tbody>
-                  {db.auditLogs?.map((log, i) => (
-                    <tr key={i}><td>{log.id}</td><td>{log.event}</td><td>{log.operator}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+    <div className="dashboard">
+      <nav className="sidebar">
+        <h2>ICMS PRO</h2>
+        <button onClick={() => setTab('inventory')}>📦 Inventory</button>
+        <button onClick={() => setTab('audit')}>📜 Audit</button>
+        <button onClick={() => {localStorage.clear(); window.location.reload();}}>Logout</button>
+      </nav>
+      <main className="content">
+        <header><h2>{tab.toUpperCase()}</h2></header>
+        <div className="table-container">
+          {tab === 'inventory' ? (
+            <table>
+              <thead><tr><th>ID</th><th>NAME</th><th>STOCK</th><th>STATUS</th></tr></thead>
+              <tbody>
+                {data.inventory.map(item => (
+                  <tr key={item.id}><td>{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td>{item.status}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <table>
+              <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
+              <tbody>
+                {data.auditLogs.map(log => (
+                  <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{log.time}</td></tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </main>
     </div>
   );
 }
-
 export default App;

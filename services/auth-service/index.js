@@ -1,14 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
 const USERS = [
-    { email: 'admin@icms.com', password: 'password123', role: 'ADMIN', name: 'Abhishek Singh' },
-    { email: 'user@icms.com', password: 'user123', role: 'USER', name: 'Abhishek Singh' }
+    { email: 'admin@icms.com', password: 'password123', role: 'ADMIN', name: 'Abhishek Singh' }
 ];
+
+app.get('/', (req, res) => res.status(200).send("AUTH_SERVICE_LIVE"));
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -20,8 +20,5 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Health check for Gateway
-app.get('/', (req, res) => res.status(200).send("AUTH_SERVICE_LIVE"));
-
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Auth Service Active on Port ${PORT}`));
+app.listen(PORT, () => console.log(`Auth Service on ${PORT}`));
