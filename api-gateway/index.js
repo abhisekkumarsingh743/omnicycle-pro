@@ -1,44 +1,41 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config();
-
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Render Environment Variables
-const AUTH_URL = process.env.AUTH_SERVICE_URL;
-const CONTENT_URL = process.env.CONTENT_SERVICE_URL;
-const AUDIT_URL = process.env.AUDIT_SERVICE_URL;
-const REPORT_URL = process.env.REPORT_SERVICE_URL;
-const SYSTEM_URL = process.env.SYSTEM_SERVICE_URL;
+const SERVICES = {
+    auth: process.env.AUTH_SERVICE_URL,
+    content: process.env.CONTENT_SERVICE_URL,
+    audit: process.env.AUDIT_SERVICE_URL,
+    report: process.env.REPORT_SERVICE_URL,
+    system: process.env.SYSTEM_SERVICE_URL
+};
 
 app.get('/all-data', async (req, res) => {
     try {
-        // Sabhi services se data fetch karne ki koshish (Parallel Calls)
-        // Note: Agar koi service down hai toh hum empty array bhejenge crash hone ki jagah
+        // Services se live data fetch karna
         const [inv, aud, rep, sys] = await Promise.allSettled([
-            axios.get(`${CONTENT_URL}/api/content/inventory`),
-            axios.get(`${AUDIT_URL}/api/audit/logs`),
-            axios.get(`${REPORT_URL}/api/reports/metrics`),
-            axios.get(`${SYSTEM_URL}/api/system/health`)
+            axios.get(`${SERVICES.content}/api/content/inventory`),
+            axios.get(`${SERVICES.audit}/api/audit/logs`),
+            axios.get(`${SERVICES.report}/api/reports/metrics`),
+            axios.get(`${SERVICES.system}/api/system/health`)
         ]);
 
         res.json({
             inventory: inv.status === 'fulfilled' ? inv.value.data : [],
             auditLogs: aud.status === 'fulfilled' ? aud.value.data : [],
-            metrics: rep.status === 'fulfilled' ? rep.value.data : { efficiency: "N/A", uptime: "N/A" },
-            system: sys.status === 'fulfilled' ? sys.value.data : { status: "Offline" }
+            metrics: rep.status === 'fulfilled' ? rep.value.data : {},
+            system: sys.status === 'fulfilled' ? sys.value.data : {}
         });
     } catch (error) {
-        console.error("Gateway Sync Error:", error.message);
-        res.status(500).json({ error: "Could not sync with microservices" });
+        res.status(500).json({ error: "Gateway failed to fetch data" });
     }
 });
 
-// Health check
-app.get('/', (req, res) => res.send("GATEWAY_ONLINE"));
+app.get('/', (req, res) => res.send("GATEWAY_READY"));
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Industrial Gateway active on ${PORT}`));
+app.listen(PORT, () => console.log(`Gateway running on ${PORT}`));
