@@ -52,3 +52,37 @@ td { padding: 15px; border-bottom: 1px solid #111; font-size: 0.85rem; color: #c
 .badge.active { color: #00ff00; }
 .green { color: #00ff00; font-weight: bold; }
 .mono { font-family: 'JetBrains Mono', monospace; color: #666; }
+
+
+/* --- NEW RESPONSIVE ADDITIONS (Yeh extra add hua hai) --- */
+
+@media (max-width: 1024px) {
+  .vertical-nav { width: 220px; }
+  .viewport-header { padding: 20px; }
+}
+
+@media (max-width: 768px) {
+  .vertical-nav { display: none; } /* Sidebar hidden on mobile */
+  .hide-mobile { display: none; }
+  
+  .dashboard-root { flex-direction: column; }
+  .scroll-content { padding: 15px; padding-bottom: 80px; }
+  
+  .viewport-header h2 { font-size: 0.9rem; }
+  .table-wrapper { padding: 15px; }
+  table th, table td { padding: 10px; font-size: 0.75rem; }
+  
+  /* Mobile Bottom Navigation */
+  .mobile-bottom-bar {
+    display: flex; position: fixed; bottom: 0; left: 0; width: 100%;
+    background: #000; border-top: 1px solid var(--border);
+    justify-content: space-around; padding: 10px 0; z-index: 1000;
+  }
+  .m-tab { background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.5; transition: 0.3s; }
+  .m-tab.active { opacity: 1; filter: drop-shadow(0 0 5px var(--gold)); }
+  
+  .login-glass-card { width: 90%; padding: 30px; }
+  .modal-card { width: 85%; padding: 25px; }
+  
+  .responsive-table { overflow-x: auto; }
+}
