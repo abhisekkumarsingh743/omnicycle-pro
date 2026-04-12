@@ -68,7 +68,6 @@ function App() {
 
   return (
     <div className="dashboard-root">
-      {/* Sidebar (Desktop/Tab) */}
       <aside className="vertical-nav">
         <h1 className="nav-logo">OMNICYCLE</h1>
         <nav className="nav-links">
@@ -86,13 +85,12 @@ function App() {
         </div>
       </aside>
 
-      {/* Main Viewport */}
       <main className="main-viewport">
         <header className="viewport-header">
           <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
-            <button className="util-btn gold" onClick={exportToPDF}>📄 PDF</button>
-            <button className="util-btn hide-mobile" onClick={sendEmail}>📧 MAIL</button>
+            <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
+            <button className="util-btn hide-mobile" onClick={sendEmail}>📧 SEND MAIL</button>
           </div>
         </header>
 
@@ -109,7 +107,7 @@ function App() {
                   <tbody>
                     {data.inventory.map(item => (
                       <tr key={item.id}>
-                        <td className="mono">{item.id.slice(-4)}</td>
+                        <td className="mono">{item.id}</td>
                         <td>{item.name}</td>
                         <td>{item.stock}</td>
                         <td className="hide-mobile"><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
@@ -150,7 +148,7 @@ function App() {
           )}
         </div>
 
-        {/* Bottom Bar for Mobile Only */}
+        {/* Mobile Bottom Bar (Only visible on small screens) */}
         <div className="mobile-bottom-bar">
           <button className={activeTab === 'inventory' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('inventory')}>📦</button>
           <button className={activeTab === 'reports' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('reports')}>📊</button>
