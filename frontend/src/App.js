@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -20,47 +22,55 @@ function App() {
     } catch (err) { console.error("Fetch error"); }
   };
 
+  // --- PDF Export Logic ---
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("OMNICYCLE PRO - SYSTEM REPORT", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableColumn = ["REF_ID", "NAME", "CATEGORY", "QUANTITY", "STATUS"];
+    const tableRows = data.inventory.map(item => [
+      item.id, item.name, item.category, item.stock, item.status
+    ]);
+
+    doc.autoTable({
+      startY: 40,
+      head: [tableColumn],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0] }
+    });
+
+    doc.save(`Omnicycle_Report_${Date.now()}.pdf`);
+  };
+
+  // --- Send Mail Logic ---
+  const sendEmail = () => {
+    const email = prompt("Please enter the recipient's email address:");
+    if (email) {
+      alert(`Report generated and prepared for: ${email}\n(Note: Direct SMTP attachment requires a paid Backend Email Service like SendGrid/Nodemailer)`);
+      // Simulating mail client opening
+      window.location.href = `mailto:${email}?subject=Omnicycle%20System%20Report&body=Please%20find%20the%20attached%20system%20data%20summary.`;
+    }
+  };
+
   const handleLogin = (e) => {
     e.preventDefault();
     localStorage.setItem('isLoggedIn', 'true');
     setIsLoggedIn(true);
   };
 
-  const addItem = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_BASE}/add-item`, newItem);
-      setShowAddForm(false);
-      fetchData();
-    } catch (e) { alert("Add failed"); }
-  };
-
-  const deleteItem = async (id) => {
-    try {
-      await axios.delete(`${API_BASE}/delete-item/${id}`);
-      fetchData();
-    } catch (e) { alert("Delete failed"); }
-  };
-
   if (!isLoggedIn) return (
     <div className="login-wrapper">
       <div className="login-glass-card">
-        <div className="login-header">
-          <h1>OMNICYCLE PRO</h1>
-          <p>SYSTEM ACCESS REQUIRED</p>
-        </div>
+        <h1>OMNICYCLE PRO</h1>
         <form onSubmit={handleLogin}>
-          <div className="input-group">
-            <label>IDENTITY_KEY</label>
-            <input type="text" placeholder="ADMIN_743" required />
-          </div>
-          <div className="input-group">
-            <label>SECURE_HASH</label>
-            <input type="password" placeholder="••••••••" required />
-          </div>
+          <input type="text" placeholder="IDENTITY_KEY" required />
+          <input type="password" placeholder="SECURE_HASH" required />
           <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
         </form>
-        <div className="login-footer">● STATUS: ENCRYPTED_CONNECTION_READY</div>
       </div>
     </div>
   );
@@ -68,72 +78,45 @@ function App() {
   return (
     <div className="dashboard-root">
       <aside className="vertical-nav">
-        <div className="brand-zone">
-          <h1 className="nav-logo">OMNICYCLE</h1>
-          <span className="version">v2.0.4</span>
-        </div>
-        
-        <div className="nav-links">
+        <h1 className="nav-logo">OMNICYCLE</h1>
+        <nav className="nav-links">
           <button className={activeTab === 'inventory' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
           <button className={activeTab === 'reports' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('reports')}>📊 ANALYTICS</button>
           <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
-          <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
-        </div>
-
+        </nav>
         <div className="nav-user">
-          <div className="user-pill">
-            <p className="u-name">ABHISHEK SINGH</p>
-            <p className="u-status">ADMINISTRATOR</p>
-          </div>
+          <p className="u-name">ABHISHEK SINGH</p>
           <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE SESSION</button>
         </div>
       </aside>
 
       <main className="main-viewport">
         <header className="viewport-header">
-          <h2>{activeTab.replace('_', ' ').toUpperCase()}</h2>
+          <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
-            <button className="util-btn" onClick={() => alert("PDF Generated")}>📄 PDF</button>
-            <button className="util-btn" onClick={() => alert("Email Sent")}>📧 MAIL</button>
-            <span className="live-pulse">● LIVE</span>
+            <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
+            <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
           </div>
         </header>
-
-        {showAddForm && (
-          <div className="modal-bg">
-            <form className="add-form-card" onSubmit={addItem}>
-              <h3>REGISTER ASSET</h3>
-              <input placeholder="Asset Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
-              <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
-              <input type="number" placeholder="Quantity" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
-              <div className="modal-actions">
-                <button type="submit" className="save-btn">CONFIRM</button>
-                <button type="button" className="close-btn" onClick={() => setShowAddForm(false)}>CANCEL</button>
-              </div>
-            </form>
-          </div>
-        )}
 
         <div className="scroll-content">
           {activeTab === 'inventory' && (
             <div className="table-wrapper">
               <div className="table-top">
                 <h3>Asset Inventory</h3>
-                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD NODE</button>
+                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEM</button>
               </div>
               <table>
                 <thead>
-                  <tr><th>REF_ID</th><th>NAME</th><th>CAT</th><th>QTY</th><th>STATUS</th><th>OP</th></tr>
+                  <tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr>
                 </thead>
                 <tbody>
                   {data.inventory.map(item => (
                     <tr key={item.id}>
                       <td className="mono">{item.id}</td>
                       <td>{item.name}</td>
-                      <td>{item.category}</td>
                       <td>{item.stock}</td>
                       <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
-                      <td><button onClick={() => deleteItem(item.id)} className="trash-btn">🗑️</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -141,44 +124,39 @@ function App() {
             </div>
           )}
 
-          {(activeTab === 'reports' || activeTab === 'master') && (
+          {activeTab === 'reports' && (
             <div className="table-wrapper">
-              <h3>System Operational Metrics</h3>
+              <h3>System Metrics</h3>
               <table>
                 <thead>
-                  <tr><th>METRIC</th><th>VALUE</th><th>THRESHOLD</th><th>STATUS</th></tr>
+                  <tr><th>METRIC</th><th>VALUE</th><th>STATUS</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency || "98.4%"}</td><td>95%</td><td className="green">OPTIMAL</td></tr>
-                  <tr><td>Active Nodes</td><td>{data.metrics.nodes || "14"}</td><td>10</td><td className="green">ONLINE</td></tr>
-                  <tr><td>System Uptime</td><td>{data.metrics.uptime || "99.9%"}</td><td>99%</td><td className="green">STABLE</td></tr>
-                  <tr><td>Database Latency</td><td>12ms</td><td>50ms</td><td className="green">GOOD</td></tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {activeTab === 'audit' && (
-            <div className="table-wrapper">
-              <h3>Security Audit Trail</h3>
-              <table>
-                <thead>
-                  <tr><th>LOG_ID</th><th>EVENT</th><th>OPERATOR</th><th>TIMESTAMP</th></tr>
-                </thead>
-                <tbody>
-                  {data.auditLogs.map(log => (
-                    <tr key={log.id}>
-                      <td className="mono">{log.id}</td>
-                      <td>{log.event}</td>
-                      <td>{log.operator}</td>
-                      <td>{new Date(log.time).toLocaleString()}</td>
-                    </tr>
-                  ))}
+                  <tr><td>System Efficiency</td><td>98.4%</td><td className="green">OPTIMAL</td></tr>
+                  <tr><td>Database Health</td><td>100%</td><td className="green">STABLE</td></tr>
                 </tbody>
               </table>
             </div>
           )}
         </div>
+
+        {showAddForm && (
+          <div className="modal-bg">
+            <form className="add-form-card" onSubmit={async (e) => {
+               e.preventDefault();
+               await axios.post(`${API_BASE}/add-item`, newItem);
+               setShowAddForm(false);
+               fetchData();
+            }}>
+              <h3>REGISTER ASSET</h3>
+              <input placeholder="Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+              <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
+              <input type="number" placeholder="Stock" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
+              <button type="submit" className="save-btn">CONFIRM</button>
+              <button type="button" onClick={() => setShowAddForm(false)}>CANCEL</button>
+            </form>
+          </div>
+        )}
       </main>
     </div>
   );
