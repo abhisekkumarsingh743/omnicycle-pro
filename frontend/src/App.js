@@ -23,7 +23,7 @@ function App() {
         metrics: res.data.metrics || { efficiency: "98.4%", nodes: "14", uptime: "99.9%" },
         auditLogs: res.data.auditLogs || []
       });
-    } catch (err) { console.error("Sync Error"); }
+    } catch (err) { console.error("Sync Error", err); }
   };
 
   const exportToPDF = () => {
@@ -45,8 +45,8 @@ function App() {
   const sendEmail = () => {
     const email = prompt("Enter Recipient Email:");
     if (email) {
-      const subject = encodeURIComponent("Omnicycle System Data Report");
-      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}`);
+      const subject = encodeURIComponent("Omnicycle System Report");
+      const body = encodeURIComponent(`Metrics: ${data.metrics.efficiency} Efficiency`);
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     }
   };
@@ -60,7 +60,7 @@ function App() {
             <input type="text" placeholder="IDENTITY_KEY" required />
             <input type="password" placeholder="SECURE_HASH" required />
           </div>
-          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
+          <button type="submit" className="login-submit">INITIALIZE</button>
         </form>
       </div>
     </div>
@@ -77,11 +77,9 @@ function App() {
           <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
         </nav>
         <div className="nav-user">
-          <div className="user-info">
-            <p className="u-label">LOGGED AS:</p>
-            <p className="u-name">ADMINISTRATOR</p>
-          </div>
-          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE ACCESS</button>
+          <p className="u-label">LOGGED AS:</p>
+          <p className="u-name">ADMINISTRATOR</p>
+          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
         </div>
       </aside>
 
@@ -89,8 +87,8 @@ function App() {
         <header className="viewport-header">
           <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
-            <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
-            <button className="util-btn hide-mobile" onClick={sendEmail}>📧 SEND MAIL</button>
+            <button className="util-btn gold" onClick={exportToPDF}>📄 PDF</button>
+            <button className="util-btn hide-mobile" onClick={sendEmail}>📧 MAIL</button>
           </div>
         </header>
 
@@ -105,14 +103,14 @@ function App() {
                 <table>
                   <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th className="hide-mobile">STATUS</th></tr></thead>
                   <tbody>
-                    {data.inventory.map(item => (
-                      <tr key={item.id}>
-                        <td className="mono">{item.id}</td>
+                    {data.inventory.length > 0 ? data.inventory.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td className="mono">{item.id || 'N/A'}</td>
                         <td>{item.name}</td>
                         <td>{item.stock}</td>
-                        <td className="hide-mobile"><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                        <td className="hide-mobile"><span className={`badge ${(item.status || 'Active').toLowerCase()}`}>{item.status || 'Active'}</span></td>
                       </tr>
-                    ))}
+                    )) : <tr><td colSpan="4" style={{textAlign:'center'}}>No Data Available</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -125,9 +123,9 @@ function App() {
               <table>
                 <thead><tr><th>PARAMETER</th><th>VALUE</th></tr></thead>
                 <tbody>
-                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td></tr>
-                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td></tr>
-                  <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td></tr>
+                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency || "98.4%"}</td></tr>
+                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes || "14"}</td></tr>
+                  <tr><td>Database Uptime</td><td>{data.metrics.uptime || "99.9%"}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -137,23 +135,23 @@ function App() {
             <div className="table-wrapper">
               <h3>System Logs</h3>
               <table>
-                <thead><tr><th>ID</th><th>EVENT</th><th className="hide-mobile">TIME</th></tr></thead>
+                <thead><tr><th>EVENT</th><th>TIME</th></tr></thead>
                 <tbody>
-                  {data.auditLogs.map(log => (
-                    <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td className="hide-mobile">{new Date(log.time).toLocaleTimeString()}</td></tr>
-                  ))}
+                  {data.auditLogs.length > 0 ? data.auditLogs.map((log, index) => (
+                    <tr key={index}><td>{log.event}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
+                  )) : <tr><td colSpan="2" style={{textAlign:'center'}}>Logs Empty</td></tr>}
                 </tbody>
               </table>
             </div>
           )}
         </div>
 
-        {/* Mobile Bottom Bar (Only visible on small screens) */}
+        {/* Responsive Mobile Nav */}
         <div className="mobile-bottom-bar">
-          <button className={activeTab === 'inventory' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('inventory')}>📦</button>
-          <button className={activeTab === 'reports' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('reports')}>📊</button>
-          <button className={activeTab === 'master' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('master')}>📂</button>
-          <button className={activeTab === 'audit' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('audit')}>📜</button>
+          <button onClick={() => setActiveTab('inventory')} className={activeTab === 'inventory' ? 'active' : ''}>📦</button>
+          <button onClick={() => setActiveTab('reports')} className={activeTab === 'reports' ? 'active' : ''}>📊</button>
+          <button onClick={() => setActiveTab('master')} className={activeTab === 'master' ? 'active' : ''}>📂</button>
+          <button onClick={() => setActiveTab('audit')} className={activeTab === 'audit' ? 'active' : ''}>📜</button>
         </div>
 
         {showAddForm && (
