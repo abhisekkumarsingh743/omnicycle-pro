@@ -18,10 +18,11 @@ function App() {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_BASE}/all-data`);
+      // Sabhi tabs ka data yahan ensure kiya hai
       setData({
         inventory: res.data.inventory || [],
         metrics: res.data.metrics || { efficiency: "98.4%", nodes: "14", uptime: "99.9%" },
-        auditLogs: res.data.auditLogs || [{id: "L-1", event: "Initial Sync", operator: "System", time: new Date()}]
+        auditLogs: res.data.auditLogs || []
       });
     } catch (err) { console.error("Sync Error"); }
   };
@@ -29,35 +30,39 @@ function App() {
   const exportToPDF = () => {
     try {
       const doc = new jsPDF();
-      doc.setFontSize(16);
       doc.text("OMNICYCLE SYSTEM REPORT", 14, 15);
-      const tableColumn = ["ID", "ASSET NAME", "CATEGORY", "STOCK", "STATUS"];
       const tableRows = data.inventory.map(item => [item.id, item.name, item.category, item.stock, item.status]);
       autoTable(doc, {
-        head: [tableColumn],
+        head: [["ID", "NAME", "CATEGORY", "QTY", "STATUS"]],
         body: tableRows,
-        startY: 30,
+        startY: 25,
         theme: 'grid',
         headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0] }
       });
-      doc.save(`Omnicycle_Report_${Date.now()}.pdf`);
-    } catch (error) { alert("PDF Export Failed."); }
+      doc.save("Omnicycle_Report.pdf");
+    } catch (e) { alert("PDF Error"); }
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
+  // --- Fixed Email Logic ---
+  const sendEmail = () => {
+    const email = prompt("Enter Recipient Email:");
+    if (email) {
+      const subject = encodeURIComponent("Omnicycle System Data Report");
+      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}\n\nPlease check the dashboard for detailed inventory.`);
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    }
   };
 
   if (!isLoggedIn) return (
     <div className="login-wrapper">
       <div className="login-glass-card">
         <h1>OMNICYCLE</h1>
-        <form onSubmit={handleLogin}>
-          <input type="text" placeholder="IDENTITY_KEY" required />
-          <input type="password" placeholder="SECURE_HASH" required />
-          <button type="submit" className="login-submit">INITIALIZE</button>
+        <form onSubmit={(e) => { e.preventDefault(); localStorage.setItem('isLoggedIn', 'true'); setIsLoggedIn(true); }}>
+          <div className="input-group">
+            <input type="text" placeholder="IDENTITY_KEY" required />
+            <input type="password" placeholder="SECURE_HASH" required />
+          </div>
+          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
         </form>
       </div>
     </div>
@@ -75,17 +80,16 @@ function App() {
         </nav>
         <div className="nav-user">
           <p className="u-name">ABHISHEK SINGH</p>
-          <p className="u-status">ADMINISTRATOR</p>
           <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
         </div>
       </aside>
 
       <main className="main-viewport">
         <header className="viewport-header">
-          <h2>{activeTab.toUpperCase()} PANEL</h2>
+          <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
             <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
-            <button className="util-btn" onClick={() => alert("Mail system ready")}>📧 SEND MAIL</button>
+            <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
           </div>
         </header>
 
@@ -93,53 +97,60 @@ function App() {
           {activeTab === 'inventory' && (
             <div className="table-wrapper">
               <div className="table-top">
-                <h3>Live Inventory</h3>
+                <h3>Live Asset Nodes</h3>
                 <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
               </div>
               <table>
-                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th><th>OP</th></tr></thead>
+                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr></thead>
                 <tbody>
                   {data.inventory.map(item => (
-                    <tr key={item.id}>
-                      <td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td>
-                      <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
-                      <td><button onClick={async () => { await axios.delete(`${API_BASE}/delete-item/${item.id}`); fetchData(); }} className="trash-btn">🗑️</button></td>
-                    </tr>
+                    <tr key={item.id}><td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td></tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-          {/* ... baki tabs ka code same rahega ... */}
+
+          {(activeTab === 'reports' || activeTab === 'master') && (
+            <div className="table-wrapper">
+              <h3>System Metrics</h3>
+              <table>
+                <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
+                <tbody>
+                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
+                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td><td className="green">ONLINE</td></tr>
+                  <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td><td className="green">HEALTHY</td></tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'audit' && (
+            <div className="table-wrapper">
+              <h3>System Logs</h3>
+              <table>
+                <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
+                <tbody>
+                  {data.auditLogs.map(log => (
+                    <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {showAddForm && (
           <div className="modal-bg">
             <div className="modal-card">
-              <div className="modal-header">
-                <h3>REGISTER NEW ITEM</h3>
-                <p>Enter asset details for system synchronization</p>
-              </div>
-              <form className="modal-form" onSubmit={async (e) => {
-                 e.preventDefault();
-                 await axios.post(`${API_BASE}/add-item`, newItem);
-                 setShowAddForm(false); fetchData();
-              }}>
-                <div className="form-group">
-                  <label>ITEM NAME</label>
-                  <input placeholder="Ex: Server Node Alpha" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
-                </div>
-                <div className="form-group">
-                  <label>CATEGORY</label>
-                  <input placeholder="Ex: Hardware" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
-                </div>
-                <div className="form-group">
-                  <label>QUANTITY</label>
-                  <input type="number" placeholder="0" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
-                </div>
+              <h3>REGISTER NEW ITEM</h3>
+              <form className="modal-form" onSubmit={async (e) => { e.preventDefault(); await axios.post(`${API_BASE}/add-item`, newItem); setShowAddForm(false); fetchData(); }}>
+                <input placeholder="Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+                <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
+                <input type="number" placeholder="Quantity" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
                 <div className="modal-footer">
-                  <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>DISCARD</button>
-                  <button type="submit" className="confirm-btn">CONFIRM ADDITION</button>
+                  <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>CANCEL</button>
+                  <button type="submit" className="confirm-btn">CONFIRM</button>
                 </div>
               </form>
             </div>
