@@ -104,7 +104,7 @@ function App() {
             <div className="table-wrapper">
               <div className="table-top">
                 <h3>Asset Inventory</h3>
-                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEM</button>
+                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
               </div>
               <table>
                 <thead>
