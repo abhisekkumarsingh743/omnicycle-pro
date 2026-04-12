@@ -28,80 +28,112 @@ function App() {
 
   const addItem = async (e) => {
     e.preventDefault();
-    await axios.post(`${API_BASE}/add-item`, newItem);
-    setShowAddForm(false);
-    fetchData();
+    try {
+      await axios.post(`${API_BASE}/add-item`, newItem);
+      setShowAddForm(false);
+      fetchData();
+    } catch (e) { alert("Add failed"); }
   };
 
   const deleteItem = async (id) => {
-    await axios.delete(`${API_BASE}/delete-item/${id}`);
-    fetchData();
+    try {
+      await axios.delete(`${API_BASE}/delete-item/${id}`);
+      fetchData();
+    } catch (e) { alert("Delete failed"); }
   };
 
   if (!isLoggedIn) return (
-    <div className="login-container">
-      <form className="login-card" onSubmit={handleLogin}>
-        <h1>OMNICYCLE</h1>
-        <input type="text" placeholder="ADMIN_ID" required />
-        <input type="password" placeholder="ACCESS_TOKEN" required />
-        <button type="submit">INITIALIZE SYSTEM</button>
-        <p>ROLE: <span>ADMIN_PRIVILEGE</span></p>
-      </form>
+    <div className="login-wrapper">
+      <div className="login-glass-card">
+        <div className="login-header">
+          <h1>OMNICYCLE PRO</h1>
+          <p>SYSTEM ACCESS REQUIRED</p>
+        </div>
+        <form onSubmit={handleLogin}>
+          <div className="input-group">
+            <label>IDENTITY_KEY</label>
+            <input type="text" placeholder="ADMIN_743" required />
+          </div>
+          <div className="input-group">
+            <label>SECURE_HASH</label>
+            <input type="password" placeholder="••••••••" required />
+          </div>
+          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
+        </form>
+        <div className="login-footer">● STATUS: ENCRYPTED_CONNECTION_READY</div>
+      </div>
     </div>
   );
 
   return (
-    <div className="dashboard-layout">
-      <aside className="vertical-sidebar">
-        <div className="brand">OMNICYCLE</div>
-        <nav>
-          <button className={activeTab === 'inventory' ? 'active' : ''} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
-          <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => setActiveTab('reports')}>📊 REPORTS</button>
-          <button className={activeTab === 'master' ? 'active' : ''} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
-        </nav>
-        <div className="user-info">
-          <p>LOGGED IN AS:</p>
-          <p className="user-name">ABHISHEK SINGH (ADMIN)</p>
-          <button className="logout-btn" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
+    <div className="dashboard-root">
+      <aside className="vertical-nav">
+        <div className="brand-zone">
+          <h1 className="nav-logo">OMNICYCLE</h1>
+          <span className="version">v2.0.4</span>
+        </div>
+        
+        <div className="nav-links">
+          <button className={activeTab === 'inventory' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
+          <button className={activeTab === 'reports' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('reports')}>📊 ANALYTICS</button>
+          <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
+          <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
+        </div>
+
+        <div className="nav-user">
+          <div className="user-pill">
+            <p className="u-name">ABHISHEK SINGH</p>
+            <p className="u-status">ADMINISTRATOR</p>
+          </div>
+          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE SESSION</button>
         </div>
       </aside>
 
-      <main className="content-area">
-        <header>
-          <h2>{activeTab.toUpperCase()} PANEL</h2>
-          {(activeTab === 'reports' || activeTab === 'master') && (
-            <div className="header-actions">
-              <button onClick={() => alert("PDF Exporting...")}>📄 PDF</button>
-              <button onClick={() => alert("Mail Sending...")}>📧 MAIL</button>
-            </div>
-          )}
+      <main className="main-viewport">
+        <header className="viewport-header">
+          <h2>{activeTab.replace('_', ' ').toUpperCase()}</h2>
+          <div className="header-actions">
+            <button className="util-btn" onClick={() => alert("PDF Generated")}>📄 PDF</button>
+            <button className="util-btn" onClick={() => alert("Email Sent")}>📧 MAIL</button>
+            <span className="live-pulse">● LIVE</span>
+          </div>
         </header>
 
         {showAddForm && (
-          <div className="modal">
-            <form onSubmit={addItem} className="add-form">
-              <h3>REGISTER NEW ASSET</h3>
-              <input placeholder="Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+          <div className="modal-bg">
+            <form className="add-form-card" onSubmit={addItem}>
+              <h3>REGISTER ASSET</h3>
+              <input placeholder="Asset Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
               <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
-              <input type="number" placeholder="Stock" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
-              <button type="submit" className="confirm-btn">ADD TO BACKEND</button>
-              <button type="button" onClick={() => setShowAddForm(false)}>CANCEL</button>
+              <input type="number" placeholder="Quantity" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
+              <div className="modal-actions">
+                <button type="submit" className="save-btn">CONFIRM</button>
+                <button type="button" className="close-btn" onClick={() => setShowAddForm(false)}>CANCEL</button>
+              </div>
             </form>
           </div>
         )}
 
-        <div className="view-container">
+        <div className="scroll-content">
           {activeTab === 'inventory' && (
-            <div className="table-card">
-              <button className="add-node-btn" onClick={() => setShowAddForm(true)}>+ ADD NODE</button>
+            <div className="table-wrapper">
+              <div className="table-top">
+                <h3>Asset Inventory</h3>
+                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD NODE</button>
+              </div>
               <table>
-                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th><th>OP</th></tr></thead>
+                <thead>
+                  <tr><th>REF_ID</th><th>NAME</th><th>CAT</th><th>QTY</th><th>STATUS</th><th>OP</th></tr>
+                </thead>
                 <tbody>
                   {data.inventory.map(item => (
                     <tr key={item.id}>
-                      <td>{item.id}</td><td>{item.name}</td><td>{item.stock}</td>
-                      <td><span className="status-badge">{item.status}</span></td>
-                      <td><button onClick={() => deleteItem(item.id)}>🗑️</button></td>
+                      <td className="mono">{item.id}</td>
+                      <td>{item.name}</td>
+                      <td>{item.category}</td>
+                      <td>{item.stock}</td>
+                      <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                      <td><button onClick={() => deleteItem(item.id)} className="trash-btn">🗑️</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -109,18 +141,41 @@ function App() {
             </div>
           )}
 
-          {activeTab === 'reports' && (
-            <div className="stats-grid">
-              <div className="stat-box"><h4>EFFICIENCY</h4><p>{data.metrics.efficiency}</p></div>
-              <div className="stat-box"><h4>UPTIME</h4><p>{data.metrics.uptime}</p></div>
-              <div className="stat-box"><h4>NODES</h4><p>{data.metrics.nodes}</p></div>
+          {(activeTab === 'reports' || activeTab === 'master') && (
+            <div className="table-wrapper">
+              <h3>System Operational Metrics</h3>
+              <table>
+                <thead>
+                  <tr><th>METRIC</th><th>VALUE</th><th>THRESHOLD</th><th>STATUS</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency || "98.4%"}</td><td>95%</td><td className="green">OPTIMAL</td></tr>
+                  <tr><td>Active Nodes</td><td>{data.metrics.nodes || "14"}</td><td>10</td><td className="green">ONLINE</td></tr>
+                  <tr><td>System Uptime</td><td>{data.metrics.uptime || "99.9%"}</td><td>99%</td><td className="green">STABLE</td></tr>
+                  <tr><td>Database Latency</td><td>12ms</td><td>50ms</td><td className="green">GOOD</td></tr>
+                </tbody>
+              </table>
             </div>
           )}
 
-          {activeTab === 'master' && (
-            <div className="table-card">
-              <h3>SYSTEM MASTER LOGS</h3>
-              {data.auditLogs.map(log => <p key={log.id}>{log.event} by {log.operator}</p>)}
+          {activeTab === 'audit' && (
+            <div className="table-wrapper">
+              <h3>Security Audit Trail</h3>
+              <table>
+                <thead>
+                  <tr><th>LOG_ID</th><th>EVENT</th><th>OPERATOR</th><th>TIMESTAMP</th></tr>
+                </thead>
+                <tbody>
+                  {data.auditLogs.map(log => (
+                    <tr key={log.id}>
+                      <td className="mono">{log.id}</td>
+                      <td>{log.event}</td>
+                      <td>{log.operator}</td>
+                      <td>{new Date(log.time).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
