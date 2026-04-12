@@ -3,59 +3,80 @@
 :root { --gold: #ffd700; --bg: #050505; --border: rgba(255, 255, 255, 0.08); --glass: rgba(255, 255, 255, 0.03); }
 body { margin: 0; background: var(--bg); color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-/* Desktop Root */
-.dashboard-root { display: flex; height: 100vh; width: 100vw; }
+/* Login Page */
+.login-wrapper { height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; }
+.login-glass-card { width: 350px; padding: 40px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; text-align: center; }
+.login-glass-card h1 { color: var(--gold); letter-spacing: 5px; margin-bottom: 30px; }
+.input-group input { width: 100%; padding: 14px; margin-bottom: 12px; background: #111; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+.login-submit { width: 100%; padding: 14px; background: var(--gold); border: none; font-weight: 800; border-radius: 8px; cursor: pointer; }
 
-/* Sidebar */
+/* Dashboard Sidebar Layout */
+.dashboard-root { display: flex; height: 100vh; }
 .vertical-nav { width: 280px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 40px 20px; box-sizing: border-box; }
 .nav-logo { color: var(--gold); text-align: center; margin-bottom: 50px; letter-spacing: 4px; font-weight: 800; }
 .nav-links { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
 .n-btn { background: transparent; border: none; color: #666; padding: 14px 18px; text-align: left; cursor: pointer; border-radius: 12px; font-weight: 600; transition: 0.3s; }
+.n-btn:hover { color: white; background: var(--glass); }
 .n-btn.active { background: rgba(255,215,0,0.1); color: var(--gold); border-left: 3px solid var(--gold); }
 
-/* User Box */
+/* Updated User Info Section */
 .nav-user { margin-top: auto; padding: 20px; background: var(--glass); border-radius: 16px; border: 1px solid var(--border); }
-.u-label { font-size: 0.6rem; color: #555; margin: 0; font-weight: 800; }
-.u-name { font-size: 0.85rem; font-weight: 700; color: var(--gold); margin: 4px 0; }
-.logout-action { width: 100%; margin-top: 15px; padding: 10px; background: transparent; border: 1px solid #ff4d4d44; color: #ff4d4d; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: 800; }
+.u-label { font-size: 0.6rem; color: #555; margin: 0; letter-spacing: 1px; font-weight: 800; }
+.u-name { font-size: 0.85rem; font-weight: 700; color: var(--gold); margin: 4px 0; letter-spacing: 0.5px; }
+.u-status { font-size: 0.65rem; color: #00ff00; margin: 0; font-weight: 600; opacity: 0.8; }
+.logout-action { width: 100%; margin-top: 15px; padding: 10px; background: transparent; border: 1px solid #ff4d4d44; color: #ff4d4d; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: 800; transition: 0.3s; }
+.logout-action:hover { background: #ff4d4d; color: white; }
 
-/* Main Content */
-.main-viewport { flex: 1; display: flex; flex-direction: column; background: #080808; position: relative; overflow: hidden; }
+/* Main Content Area */
+.main-viewport { flex: 1; display: flex; flex-direction: column; background: #080808; position: relative; }
 .viewport-header { padding: 25px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-.scroll-content { flex: 1; padding: 30px; overflow-y: auto; }
-
-/* Table Design (Fixed Mapping Colors) */
-.table-wrapper { background: #0d0d0d; border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
-.table-container { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-th { text-align: left; color: var(--gold); padding: 15px; border-bottom: 2px solid #111; font-size: 0.75rem; text-transform: uppercase; }
-td { padding: 15px; border-bottom: 1px solid #111; font-size: 0.85rem; color: #ccc; }
-.mono { font-family: 'JetBrains Mono', monospace; color: #666; }
-.green { color: #00ff00; font-weight: bold; }
-
-/* Mobile Navigation (Hidden by default) */
-.mobile-nav { display: none; }
-
-/* Utilities */
 .util-btn { background: var(--glass); border: 1px solid #333; color: white; padding: 10px 18px; cursor: pointer; border-radius: 8px; font-weight: bold; margin-left: 10px; }
 .util-btn.gold { background: var(--gold); color: black; border: none; }
 .prime-btn { background: var(--gold); color: black; padding: 12px 24px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
 
-/* Login */
-.login-wrapper { height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; }
-.login-glass-card { width: 350px; padding: 40px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; text-align: center; }
-.input-group input { width: 100%; padding: 14px; margin-bottom: 12px; background: #111; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
-.login-submit { width: 100%; padding: 14px; background: var(--gold); border: none; font-weight: 800; border-radius: 8px; cursor: pointer; }
+/* Table & Modal */
+.scroll-content { flex: 1; padding: 30px; overflow-y: auto; }
+.table-wrapper { background: #0d0d0d; border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; color: var(--gold); padding: 15px; border-bottom: 2px solid #111; font-size: 0.75rem; text-transform: uppercase; }
+td { padding: 15px; border-bottom: 1px solid #111; font-size: 0.85rem; color: #ccc; }
 
-/* Responsive Media Queries */
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+.modal-card { background: #111; padding: 35px; border-radius: 20px; border: 1px solid var(--border); width: 350px; }
+.modal-form input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+.modal-footer { display: flex; gap: 10px; }
+.confirm-btn { flex: 1; background: var(--gold); padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.cancel-btn { flex: 1; background: transparent; border: 1px solid #333; color: white; border-radius: 8px; cursor: pointer; }
+
+.badge.active { color: #00ff00; }
+.green { color: #00ff00; font-weight: bold; }
+.mono { font-family: 'JetBrains Mono', monospace; color: #666; }
+
+/* --- NEW RESPONSIVE CSS (End of File) --- */
+.mobile-nav-bar { display: none; }
+
 @media (max-width: 768px) {
-  .vertical-nav { display: none; }
-  .desktop-only { display: none; }
-  .mobile-nav { display: flex; position: fixed; bottom: 0; width: 100%; background: #000; border-top: 1px solid var(--border); justify-content: space-around; padding: 15px 0; z-index: 100; }
-  .mobile-nav .m-btn { background: none; border: none; font-size: 1.2rem; opacity: 0.4; }
-  .mobile-nav .m-btn.active { opacity: 1; filter: drop-shadow(0 0 5px var(--gold)); }
-  .scroll-content { padding: 15px; padding-bottom: 80px; }
+  .vertical-nav { display: none; } /* Sidebar hidden on mobile */
+  .dashboard-root { flex-direction: column; }
+  
   .viewport-header { padding: 15px 20px; }
-  .table-wrapper { padding: 15px; }
-  .login-glass-card { width: 90%; }
+  .viewport-header h2 { font-size: 1rem; }
+  .util-btn { padding: 8px 12px; font-size: 0.7rem; }
+  
+  .scroll-content { padding: 15px; padding-bottom: 80px; }
+  
+  .responsive-container { overflow-x: auto; width: 100%; }
+  table { min-width: 500px; } /* Ensures table content doesn't squeeze */
+  
+  /* Bottom Navigation for Mobile */
+  .mobile-nav-bar {
+    display: flex; position: fixed; bottom: 0; left: 0; width: 100%;
+    background: #000; border-top: 1px solid var(--border);
+    justify-content: space-around; padding: 15px 0; z-index: 1000;
+  }
+  .m-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.4; transition: 0.3s; }
+  .m-btn.active { opacity: 1; filter: drop-shadow(0 0 5px var(--gold)); }
+  
+  .login-glass-card, .modal-card { width: 85%; }
 }

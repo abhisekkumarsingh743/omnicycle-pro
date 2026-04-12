@@ -23,7 +23,7 @@ function App() {
         metrics: res.data.metrics || { efficiency: "98.4%", nodes: "14", uptime: "99.9%" },
         auditLogs: res.data.auditLogs || []
       });
-    } catch (err) { console.error("Sync Error", err); }
+    } catch (err) { console.error("Sync Error"); }
   };
 
   const exportToPDF = () => {
@@ -45,8 +45,8 @@ function App() {
   const sendEmail = () => {
     const email = prompt("Enter Recipient Email:");
     if (email) {
-      const subject = encodeURIComponent("Omnicycle System Report");
-      const body = encodeURIComponent(`Metrics Update: ${data.metrics.efficiency} Efficiency`);
+      const subject = encodeURIComponent("Omnicycle System Data Report");
+      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}\n\nPlease check the dashboard for detailed inventory.`);
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     }
   };
@@ -68,7 +68,6 @@ function App() {
 
   return (
     <div className="dashboard-root">
-      {/* Sidebar - Persistent for Desktop */}
       <aside className="vertical-nav">
         <h1 className="nav-logo">OMNICYCLE</h1>
         <nav className="nav-links">
@@ -77,10 +76,12 @@ function App() {
           <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
           <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
         </nav>
+        
         <div className="nav-user">
           <div className="user-info">
             <p className="u-label">LOGGED AS:</p>
             <p className="u-name">ADMINISTRATOR</p>
+            <p className="u-status">● SYSTEM_ONLINE</p>
           </div>
           <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE ACCESS</button>
         </div>
@@ -90,8 +91,8 @@ function App() {
         <header className="viewport-header">
           <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
-            <button className="util-btn gold" onClick={exportToPDF}>📄 PDF</button>
-            <button className="util-btn desktop-only" onClick={sendEmail}>📧 MAIL</button>
+            <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
+            <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
           </div>
         </header>
 
@@ -102,26 +103,12 @@ function App() {
                 <h3>Live Asset Nodes</h3>
                 <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
               </div>
-              <div className="table-container">
+              <div className="responsive-container">
                 <table>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>NAME</th>
-                      <th>CATEGORY</th>
-                      <th>QTY</th>
-                      <th>STATUS</th>
-                    </tr>
-                  </thead>
+                  <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr></thead>
                   <tbody>
-                    {data.inventory.map((item, index) => (
-                      <tr key={item.id || index}>
-                        <td className="mono">{item.id}</td>
-                        <td>{item.name}</td>
-                        <td>{item.category}</td>
-                        <td>{item.stock}</td>
-                        <td><span className={`badge ${(item.status || '').toLowerCase()}`}>{item.status}</span></td>
-                      </tr>
+                    {data.inventory.map(item => (
+                      <tr key={item.id}><td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td></tr>
                     ))}
                   </tbody>
                 </table>
@@ -132,43 +119,43 @@ function App() {
           {(activeTab === 'reports' || activeTab === 'master') && (
             <div className="table-wrapper">
               <h3>System Metrics</h3>
-              <table>
-                <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
-                <tbody>
-                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
-                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td><td className="green">ONLINE</td></tr>
-                  <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td><td className="green">HEALTHY</td></tr>
-                </tbody>
-              </table>
+              <div className="responsive-container">
+                <table>
+                  <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
+                  <tbody>
+                    <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
+                    <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td><td className="green">ONLINE</td></tr>
+                    <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td><td className="green">HEALTHY</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {activeTab === 'audit' && (
             <div className="table-wrapper">
               <h3>System Logs</h3>
-              <table>
-                <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
-                <tbody>
-                  {data.auditLogs.map((log, index) => (
-                    <tr key={index}>
-                      <td>{log.id || index + 1}</td>
-                      <td>{log.event}</td>
-                      <td>{new Date(log.time).toLocaleTimeString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="responsive-container">
+                <table>
+                  <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
+                  <tbody>
+                    {data.auditLogs.map(log => (
+                      <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Mobile Nav Bar */}
-        <nav className="mobile-nav">
+        {/* Mobile-only Bottom Nav */}
+        <div className="mobile-nav-bar">
           <button className={activeTab === 'inventory' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('inventory')}>📦</button>
           <button className={activeTab === 'reports' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('reports')}>📊</button>
           <button className={activeTab === 'master' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('master')}>📂</button>
           <button className={activeTab === 'audit' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('audit')}>📜</button>
-        </nav>
+        </div>
 
         {showAddForm && (
           <div className="modal-bg">
