@@ -4,7 +4,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './App.css';
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+// Check if backend is running on 8000
+const API_BASE = "http://localhost:8000";
 
 function App() {
   const [data, setData] = useState({ inventory: [], metrics: {}, auditLogs: [] });
@@ -13,24 +14,41 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', category: '', stock: '', status: 'Active' });
 
-  useEffect(() => { if (isLoggedIn) fetchData(); }, [isLoggedIn]);
+  // Load data immediately on login
+  useEffect(() => { 
+    if (isLoggedIn) {
+      fetchData();
+    }
+  }, [isLoggedIn]);
 
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_BASE}/all-data`);
+      console.log("Backend Data Received:", res.data); // Debugging line
+      
+      // Setting data with fallback to empty arrays to prevent mapping errors
       setData({
         inventory: res.data.inventory || [],
         metrics: res.data.metrics || { efficiency: "98.4%", nodes: "14", uptime: "99.9%" },
         auditLogs: res.data.auditLogs || []
       });
-    } catch (err) { console.error("Sync Error"); }
+    } catch (err) { 
+      console.error("API Fetch Error:", err);
+      // If server is down, keep old state or show alert
+    }
   };
 
   const exportToPDF = () => {
     try {
       const doc = new jsPDF();
       doc.text("OMNICYCLE SYSTEM REPORT", 14, 15);
-      const tableRows = data.inventory.map(item => [item.id, item.name, item.category, item.stock, item.status]);
+      const tableRows = data.inventory.map(item => [
+        item.id || item._id || 'N/A', 
+        item.name || 'Unnamed', 
+        item.category || 'General', 
+        item.stock || 0, 
+        item.status || 'Active'
+      ]);
       autoTable(doc, {
         head: [["ID", "NAME", "CATEGORY", "QTY", "STATUS"]],
         body: tableRows,
@@ -45,8 +63,8 @@ function App() {
   const sendEmail = () => {
     const email = prompt("Enter Recipient Email:");
     if (email) {
-      const subject = encodeURIComponent("Omnicycle System Data Report");
-      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}\n\nPlease check the dashboard for detailed inventory.`);
+      const subject = encodeURIComponent("Omnicycle System Report");
+      const body = encodeURIComponent(`Efficiency: ${data.metrics.efficiency}\nNodes: ${data.metrics.nodes}`);
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     }
   };
@@ -92,7 +110,7 @@ function App() {
           <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
             <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
-            <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
+            <button className="util-btn desktop-only" onClick={sendEmail}>📧 MAIL</button>
           </div>
         </header>
 
@@ -103,13 +121,18 @@ function App() {
                 <h3>Live Asset Nodes</h3>
                 <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
               </div>
-              <div className="responsive-container">
+              <div className="table-responsive-wrapper">
                 <table>
                   <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr></thead>
                   <tbody>
-                    {data.inventory.map(item => (
-                      <tr key={item.id}><td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td></tr>
-                    ))}
+                    {data.inventory.length > 0 ? data.inventory.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td className="mono">{item.id || item._id || index + 101}</td>
+                        <td>{item.name}</td>
+                        <td>{item.stock}</td>
+                        <td><span className={`badge ${(item.status || 'active').toLowerCase()}`}>{item.status || 'Active'}</span></td>
+                      </tr>
+                    )) : <tr><td colSpan="4" style={{textAlign:'center', padding:'20px'}}>Syncing Data from Server...</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -119,50 +142,50 @@ function App() {
           {(activeTab === 'reports' || activeTab === 'master') && (
             <div className="table-wrapper">
               <h3>System Metrics</h3>
-              <div className="responsive-container">
-                <table>
-                  <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
-                  <tbody>
-                    <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
-                    <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td><td className="green">ONLINE</td></tr>
-                    <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td><td className="green">HEALTHY</td></tr>
-                  </tbody>
-                </table>
-              </div>
+              <table>
+                <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
+                <tbody>
+                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency || '98.4%'}</td><td className="green">OPTIMAL</td></tr>
+                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes || '14'}</td><td className="green">ONLINE</td></tr>
+                  <tr><td>Database Uptime</td><td>{data.metrics.uptime || '99.9%'}</td><td className="green">HEALTHY</td></tr>
+                </tbody>
+              </table>
             </div>
           )}
 
           {activeTab === 'audit' && (
             <div className="table-wrapper">
               <h3>System Logs</h3>
-              <div className="responsive-container">
-                <table>
-                  <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
-                  <tbody>
-                    {data.auditLogs.map(log => (
-                      <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <table>
+                <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
+                <tbody>
+                  {data.auditLogs.length > 0 ? data.auditLogs.map((log, index) => (
+                    <tr key={log.id || index}>
+                      <td>{log.id || index + 1}</td>
+                      <td>{log.event}</td>
+                      <td>{log.time ? new Date(log.time).toLocaleTimeString() : 'Recent'}</td>
+                    </tr>
+                  )) : <tr><td colSpan="3" style={{textAlign:'center', padding:'20px'}}>No Recent Logs</td></tr>}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        {/* Mobile-only Bottom Nav */}
-        <div className="mobile-nav-bar">
+        {/* Responsive Footer Nav */}
+        <nav className="mobile-footer-nav">
           <button className={activeTab === 'inventory' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('inventory')}>📦</button>
           <button className={activeTab === 'reports' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('reports')}>📊</button>
           <button className={activeTab === 'master' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('master')}>📂</button>
           <button className={activeTab === 'audit' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('audit')}>📜</button>
-        </div>
+        </nav>
 
         {showAddForm && (
           <div className="modal-bg">
             <div className="modal-card">
               <h3>REGISTER NEW ITEM</h3>
-              <form className="modal-form" onSubmit={async (e) => { e.preventDefault(); await axios.post(`${API_BASE}/add-item`, newItem); setShowAddForm(false); fetchData(); }}>
-                <input placeholder="Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+              <form className="modal-form" onSubmit={async (e) => { e.preventDefault(); try { await axios.post(`${API_BASE}/add-item`, newItem); setShowAddForm(false); fetchData(); } catch(err){alert("Add Error")} }}>
+                <input placeholder="Item Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
                 <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
                 <input type="number" placeholder="Quantity" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
                 <div className="modal-footer">
