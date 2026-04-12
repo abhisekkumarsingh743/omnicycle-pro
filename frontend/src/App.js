@@ -69,10 +69,10 @@ function App() {
         <h1>OMNICYCLE</h1>
         <form onSubmit={(e) => { e.preventDefault(); localStorage.setItem('isLoggedIn', 'true'); setIsLoggedIn(true); }}>
           <div className="input-group">
-            <input type="text" placeholder="IDENTITY_KEY" required />
-            <input type="password" placeholder="SECURE_HASH" required />
+            <input type="text" placeholder="USER_ID" required />
+            <input type="password" placeholder="USER_PASSWORD" required />
           </div>
-          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
+          <button type="submit" className="login-submit">LOGIN</button>
         </form>
       </div>
     </div>
