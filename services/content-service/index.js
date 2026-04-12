@@ -4,7 +4,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// In-memory data (Render par jab tak service active hai, data rahega)
 let inventory = [
     { id: "IND-101", name: "Industrial Pump X1", category: "Machinery", stock: 12, status: "Active" },
     { id: "IND-102", name: "Steel Pipes 50mm", category: "Raw Material", stock: 45, status: "In-Stock" }

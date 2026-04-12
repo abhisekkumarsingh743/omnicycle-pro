@@ -8,8 +8,6 @@ async function run() {
         const data = await redis.brpop('industrial_queue', 0);
         const job = JSON.parse(data[1]);
         console.log(`🚀 Processing Audit for Job ID: ${job.id}`);
-        
-        // SMTP logic as per assignment requirements
         console.log("📧 Sending Email to Admin...");
     }
 }

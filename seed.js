@@ -2,14 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-// We connect directly to the Auth database
 const MONGO_URI = "mongodb://localhost:27017/auth_db"; 
 
 const seedAdmin = async () => {
     try {
         await mongoose.connect(MONGO_URI);
-        
-        // Define the User Schema
+
         const userSchema = new mongoose.Schema({
             email: String,
             password: String,
@@ -17,7 +15,6 @@ const seedAdmin = async () => {
         });
         const User = mongoose.model('User', userSchema);
 
-        // Check if admin exists
         const adminExists = await User.findOne({ email: 'admin@elite.com' });
         if (adminExists) {
             console.log("✔️ Admin already exists.");
