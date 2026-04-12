@@ -8,13 +8,10 @@ function App() {
   const [data, setData] = useState({ inventory: [], auditLogs: [], metrics: {}, system: {} });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('inventory');
-  // LocalStorage se login state check karna
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
 
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchData();
-    }
+    if (isLoggedIn) fetchData();
   }, [isLoggedIn]);
 
   const fetchData = async () => {
@@ -28,6 +25,7 @@ function App() {
     }
   };
 
+  // --- Handlers ---
   const handleLogin = (e) => {
     e.preventDefault();
     localStorage.setItem('isLoggedIn', 'true');
@@ -35,89 +33,109 @@ function App() {
   };
 
   const handleLogout = () => {
-    // Session terminate logic
     localStorage.removeItem('isLoggedIn');
     setIsLoggedIn(false);
-    alert("Session Terminated Safely.");
   };
 
-  // Login Page View
-  if (!isLoggedIn) {
-    return (
-      <div className="login-screen">
-        <div className="login-glass-card">
-          <h1 className="logo-text">OMNICYCLE PRO</h1>
-          <p className="subtitle">INDUSTRIAL INTELLIGENCE GATEWAY</p>
-          <form onSubmit={handleLogin}>
-            <input type="text" placeholder="ADMIN_ACCESS_KEY" required />
-            <input type="password" placeholder="SECURE_PHRASE" required />
-            <button type="submit" className="login-btn">INITIALIZE SYSTEM</button>
-          </form>
-          <div className="system-status">● CORE_ENGINE: READY</div>
-        </div>
-      </div>
-    );
-  }
+  const addItem = () => {
+    const newItem = { id: `IND-${Math.floor(Math.random() * 900 + 100)}`, name: "New Asset Node", category: "General", stock: 0, status: "Active" };
+    setData({ ...data, inventory: [newItem, ...data.inventory] });
+  };
 
-  if (loading) return <div className="loader">SYNCING_WITH_NODES...</div>;
+  const deleteItem = (id) => {
+    setData({ ...data, inventory: data.inventory.filter(item => item.id !== id) });
+  };
+
+  // --- Views ---
+  if (!isLoggedIn) return (
+    <div className="login-container">
+      <div className="login-box">
+        <h1 className="glitch-text">OMNICYCLE_PRO</h1>
+        <p>INDUSTRIAL_ACCESS_REQUIRED</p>
+        <form onSubmit={handleLogin}>
+          <input type="text" placeholder="IDENTITY_KEY" required />
+          <input type="password" placeholder="SECURITY_HASH" required />
+          <button type="submit" className="glow-btn">INITIALIZE</button>
+        </form>
+      </div>
+    </div>
+  );
+
+  if (loading) return <div className="loader">DECRYPTING_SYSTEM_NODES...</div>;
 
   return (
-    <div className="elite-viewport">
-      <aside className="glass-sidebar">
-        <div className="brand-header">
-          <h1 className="logo-text">OMNICYCLE PRO</h1>
-        </div>
-        
-        <nav className="side-nav">
-          <button className={activeTab === 'inventory' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
-          <button className={activeTab === 'reports' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('reports')}>📈 REPORTS</button>
-          <button className={activeTab === 'master' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
-          <button className={activeTab === 'audit' ? 'nav-link active' : 'nav-link'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
+    <div className="dashboard-root">
+      <aside className="elite-sidebar">
+        <div className="sidebar-brand">OMNICYCLE</div>
+        <nav className="nav-group">
+          <button className={activeTab === 'inventory' ? 'nav-tab active' : 'nav-tab'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
+          <button className={activeTab === 'reports' ? 'nav-tab active' : 'nav-tab'} onClick={() => setActiveTab('reports')}>📈 REPORTS</button>
+          <button className={activeTab === 'audit' ? 'nav-tab active' : 'nav-tab'} onClick={() => setActiveTab('audit')}>📜 AUDIT</button>
         </nav>
-
-        <div className="admin-footer">
-          <div className="user-info">
-            <span className="rank">SUPER_ADMIN</span>
-            <span className="name">Abhishek Singh</span>
-          </div>
-          <button className="terminate-btn" onClick={handleLogout}>TERMINATE SESSION</button>
+        <div className="user-section">
+          <div className="status-dot"></div>
+          <p>ABHISHEK SINGH</p>
+          <button className="term-btn" onClick={handleLogout}>TERMINATE</button>
         </div>
       </aside>
 
-      <main className="main-content">
-        <header className="main-header">
-          <h2>{activeTab.toUpperCase()} OVERVIEW</h2>
-          <div className="utility-bar">
-            <button className="util-btn">📄 PDF</button>
-            <button className="util-btn">📧 MAIL</button>
-            <div className="live-status">● LIVE_FEED</div>
+      <main className="main-viewport">
+        <header className="viewport-nav">
+          <h2>{activeTab.toUpperCase()} _PANEL</h2>
+          <div className="action-row">
+            <button className="glass-btn">📄 PDF</button>
+            <button className="glass-btn">📧 MAIL</button>
           </div>
         </header>
 
-        <div className="data-display-area">
+        <div className="content-scroll">
           {activeTab === 'inventory' && (
-            <div className="glass-card table-view">
-              <div className="card-top">
-                <h3>Global Asset Tracker</h3>
-                <button className="add-item-btn">+ NEW ASSET</button>
+            <div className="glass-table-card">
+              <div className="table-header">
+                <h3>Global Inventory Sync</h3>
+                <button className="add-node-btn" onClick={addItem}>+ ADD_NODE</button>
               </div>
               <table>
                 <thead>
-                  <tr><th>REF_ID</th><th>ITEM NAME</th><th>CATEGORY</th><th>QTY</th><th>STATUS</th><th>ACTIONS</th></tr>
+                  <tr><th>REF_ID</th><th>ASSET_NAME</th><th>CAT</th><th>QTY</th><th>STATUS</th><th>OP</th></tr>
                 </thead>
                 <tbody>
                   {data.inventory.map(item => (
                     <tr key={item.id}>
                       <td>{item.id}</td><td>{item.name}</td><td>{item.category}</td><td>{item.stock}</td>
-                      <td><span className={`status-pill ${item.status.toLowerCase()}`}>{item.status}</span></td>
-                      <td><button className="row-action">🗑️</button></td>
+                      <td><span className={`pill ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                      <td><button onClick={() => deleteItem(item.id)} className="del-btn">🗑️</button></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-          {/* Baaki Tabs ka logic yahan aayega */}
+
+          {activeTab === 'reports' && (
+            <div className="grid-container">
+              <div className="stat-card"><h4>EFFICIENCY</h4><p>{data.metrics.efficiency || '98.4%'}</p></div>
+              <div className="stat-card"><h4>ACTIVE_NODES</h4><p>{data.metrics.nodes || '12'}</p></div>
+              <div className="stat-card"><h4>UPTIME</h4><p>{data.metrics.uptime || '99.9%'}</p></div>
+            </div>
+          )}
+
+          {activeTab === 'audit' && (
+            <div className="glass-table-card">
+              <table>
+                <thead>
+                  <tr><th>LOG_ID</th><th>EVENT</th><th>OPERATOR</th><th>TS</th></tr>
+                </thead>
+                <tbody>
+                  {data.auditLogs.map(log => (
+                    <tr key={log.id}>
+                      <td>{log.id}</td><td>{log.event}</td><td>{log.operator}</td><td>{new Date(log.time).toLocaleTimeString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </main>
     </div>
