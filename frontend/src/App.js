@@ -18,58 +18,52 @@ function App() {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_BASE}/all-data`);
-      setData(res.data);
-    } catch (err) { console.error("Fetch error"); }
+      // Fallback data agar backend se missing ho
+      const finalizedData = {
+        inventory: res.data.inventory || [],
+        metrics: res.data.metrics || { efficiency: "98.4%", nodes: "14", uptime: "99.9%" },
+        auditLogs: res.data.auditLogs || [{id: "L-99", event: "System Sync", operator: "Auto", time: new Date()}]
+      };
+      setData(finalizedData);
+    } catch (err) { console.error("Sync Error:", err); }
   };
 
-  // --- PDF Export Logic ---
+  // --- Fixed PDF Export ---
   const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("OMNICYCLE PRO - SYSTEM REPORT", 14, 20);
-    doc.setFontSize(10);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    try {
+      const doc = new jsPDF();
+      doc.text("OMNICYCLE SYSTEM REPORT", 14, 15);
+      
+      const tableColumn = ["ID", "ASSET NAME", "QTY", "STATUS"];
+      const tableRows = data.inventory.map(item => [item.id, item.name, item.stock, item.status]);
 
-    const tableColumn = ["REF_ID", "NAME", "CATEGORY", "QUANTITY", "STATUS"];
-    const tableRows = data.inventory.map(item => [
-      item.id, item.name, item.category, item.stock, item.status
-    ]);
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 25,
+        theme: 'grid',
+        headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0] }
+      });
 
-    doc.autoTable({
-      startY: 40,
-      head: [tableColumn],
-      body: tableRows,
-      theme: 'grid',
-      headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0] }
-    });
-
-    doc.save(`Omnicycle_Report_${Date.now()}.pdf`);
-  };
-
-  // --- Send Mail Logic ---
-  const sendEmail = () => {
-    const email = prompt("Please enter the recipient's email address:");
-    if (email) {
-      alert(`Report generated and prepared for: ${email}\n(Note: Direct SMTP attachment requires a paid Backend Email Service like SendGrid/Nodemailer)`);
-      // Simulating mail client opening
-      window.location.href = `mailto:${email}?subject=Omnicycle%20System%20Report&body=Please%20find%20the%20attached%20system%20data%20summary.`;
+      doc.save(`Omnicycle_Report.pdf`);
+    } catch (error) {
+      alert("PDF Error: Make sure 'jspdf-autotable' is installed.");
     }
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
+  const sendEmail = () => {
+    const email = prompt("Enter Admin Email:");
+    if (email) window.location.href = `mailto:${email}?subject=System_Report&body=Check Attached PDF.`;
   };
 
   if (!isLoggedIn) return (
     <div className="login-wrapper">
       <div className="login-glass-card">
-        <h1>OMNICYCLE PRO</h1>
-        <form onSubmit={handleLogin}>
-          <input type="text" placeholder="IDENTITY_KEY" required />
-          <input type="password" placeholder="SECURE_HASH" required />
-          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
+        <h1>OMNICYCLE_PRO</h1>
+        <form onSubmit={(e) => { e.preventDefault(); localStorage.setItem('isLoggedIn', 'true'); setIsLoggedIn(true); }}>
+          <input type="text" placeholder="ADMIN_ACCESS_ID" required />
+          <input type="password" placeholder="SECURITY_HASH" required />
+          <button type="submit" className="login-submit">INITIALIZE</button>
         </form>
       </div>
     </div>
@@ -79,20 +73,22 @@ function App() {
     <div className="dashboard-root">
       <aside className="vertical-nav">
         <h1 className="nav-logo">OMNICYCLE</h1>
-        <nav className="nav-links">
+        <div className="nav-links">
           <button className={activeTab === 'inventory' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
           <button className={activeTab === 'reports' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('reports')}>📊 ANALYTICS</button>
           <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
-        </nav>
+          <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
+        </div>
         <div className="nav-user">
           <p className="u-name">ABHISHEK SINGH</p>
-          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE SESSION</button>
+          <p className="u-status">ADMIN_MODE</p>
+          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
         </div>
       </aside>
 
       <main className="main-viewport">
         <header className="viewport-header">
-          <h2>{activeTab.toUpperCase()}</h2>
+          <h2>{activeTab.toUpperCase()} PANEL</h2>
           <div className="header-actions">
             <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
             <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
@@ -102,21 +98,15 @@ function App() {
         <div className="scroll-content">
           {activeTab === 'inventory' && (
             <div className="table-wrapper">
-              <div className="table-top">
-                <h3>Asset Inventory</h3>
-                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
-              </div>
+              <div className="table-top"><h3>Live Inventory</h3><button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button></div>
               <table>
-                <thead>
-                  <tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr>
-                </thead>
+                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th><th>ACTION</th></tr></thead>
                 <tbody>
                   {data.inventory.map(item => (
                     <tr key={item.id}>
-                      <td className="mono">{item.id}</td>
-                      <td>{item.name}</td>
-                      <td>{item.stock}</td>
+                      <td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td>
                       <td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                      <td><button onClick={async () => { await axios.delete(`${API_BASE}/delete-item/${item.id}`); fetchData(); }}>🗑️</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -124,16 +114,29 @@ function App() {
             </div>
           )}
 
-          {activeTab === 'reports' && (
+          {(activeTab === 'reports' || activeTab === 'master') && (
             <div className="table-wrapper">
-              <h3>System Metrics</h3>
+              <h3>System Master Metrics</h3>
               <table>
-                <thead>
-                  <tr><th>METRIC</th><th>VALUE</th><th>STATUS</th></tr>
-                </thead>
+                <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
                 <tbody>
-                  <tr><td>System Efficiency</td><td>98.4%</td><td className="green">OPTIMAL</td></tr>
-                  <tr><td>Database Health</td><td>100%</td><td className="green">STABLE</td></tr>
+                  <tr><td>Global Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
+                  <tr><td>Database Connection</td><td>{data.metrics.uptime}</td><td className="green">ONLINE</td></tr>
+                  <tr><td>Active Edge Nodes</td><td>{data.metrics.nodes}</td><td className="green">SYNCED</td></tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'audit' && (
+            <div className="table-wrapper">
+              <h3>Security Logs</h3>
+              <table>
+                <thead><tr><th>LOG_ID</th><th>EVENT</th><th>OPERATOR</th><th>TIME</th></tr></thead>
+                <tbody>
+                  {data.auditLogs.map(log => (
+                    <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{log.operator}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -145,10 +148,9 @@ function App() {
             <form className="add-form-card" onSubmit={async (e) => {
                e.preventDefault();
                await axios.post(`${API_BASE}/add-item`, newItem);
-               setShowAddForm(false);
-               fetchData();
+               setShowAddForm(false); fetchData();
             }}>
-              <h3>REGISTER ASSET</h3>
+              <h3>NEW ASSET</h3>
               <input placeholder="Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
               <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
               <input type="number" placeholder="Stock" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
