@@ -1,100 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;700&display=swap');
+:root { --gold: #ffd700; --bg: #050505; --glass: rgba(255,255,255,0.03); --border: rgba(255,255,255,0.1); }
+body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-:root {
-  --gold: #ffd700;
-  --bg: #050505;
-  --glass-bg: rgba(255, 255, 255, 0.02);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text: #e0e0e0;
-}
+.app-layout { display: flex; height: 100vh; }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  overflow: hidden;
-}
+/* Vertical Sidebar */
+.vertical-nav { width: 280px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 40px 20px; }
+.brand { color: var(--gold); letter-spacing: 4px; font-size: 1.2rem; margin-bottom: 50px; text-align: center; }
+.nav-label { color: #444; font-size: 0.7rem; margin: 20px 10px 10px; letter-spacing: 2px; }
+.nav-group { display: flex; flex-direction: column; gap: 8px; }
 
-/* --- Login Screen --- */
-.login-container {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(circle at center, #111 0%, #000 100%);
+.v-btn { 
+    background: none; border: none; color: #888; padding: 15px; text-align: left; 
+    cursor: pointer; border-radius: 8px; font-size: 0.85rem; transition: 0.3s;
 }
-.login-box {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  padding: 60px;
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  text-align: center;
-  box-shadow: 0 0 50px rgba(0,0,0,0.8);
-}
-.login-box input {
-  width: 100%;
-  padding: 15px;
-  margin: 10px 0;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--glass-border);
-  color: white;
-  border-radius: 5px;
-}
-.glow-btn {
-  width: 100%;
-  padding: 15px;
-  background: var(--gold);
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-}
+.v-btn.active { background: var(--glass); color: white; border-left: 3px solid var(--gold); }
+.v-btn:hover { background: var(--glass); color: var(--gold); }
+.v-btn.action { color: var(--gold); font-weight: bold; border: 1px solid rgba(255, 215, 0, 0.2); margin-top: 10px; }
 
-/* --- Dashboard Layout --- */
-.dashboard-root { display: flex; height: 100vh; }
-.elite-sidebar {
-  width: 260px;
-  background: #000;
-  border-right: 1px solid var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  padding: 30px 15px;
-}
-.sidebar-brand { color: var(--gold); font-size: 1.5rem; font-weight: bold; letter-spacing: 5px; margin-bottom: 50px; text-align: center; }
-.nav-tab {
-  background: none;
-  border: none;
-  color: #666;
-  padding: 15px;
-  text-align: left;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 0.9rem;
-}
-.nav-tab.active { color: white; background: var(--glass-bg); border-left: 3px solid var(--gold); }
+/* User Section */
+.user-profile { margin-top: auto; padding: 20px; background: var(--glass); border-radius: 12px; display: flex; align-items: center; gap: 12px; position: relative;}
+.avatar { width: 35px; height: 35px; background: var(--gold); border-radius: 50%; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.u-name { font-size: 0.85rem; margin: 0; font-weight: bold; }
+.u-role { font-size: 0.7rem; color: #00ff00; margin: 0; }
+.term-btn { margin-top: 15px; width: 100%; padding: 8px; background: none; border: 1px solid #ff4d4d; color: #ff4d4d; border-radius: 4px; cursor: pointer; }
 
-/* --- Table & Cards --- */
-.main-viewport { flex: 1; display: flex; flex-direction: column; background: #080808; }
-.viewport-nav { padding: 25px 40px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; }
-.glass-table-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; margin: 30px; padding: 25px; }
-.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-
+/* Content Area */
+.main-viewport { flex: 1; padding: 60px; overflow-y: auto; background: radial-gradient(at top left, #0f0f0f, #050505); }
+.table-container { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 25px; }
 table { width: 100%; border-collapse: collapse; }
-th { color: var(--gold); text-align: left; padding: 15px; font-size: 0.75rem; border-bottom: 2px solid var(--glass-border); }
-td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.85rem; }
+th { text-align: left; color: var(--gold); padding: 15px; border-bottom: 2px solid var(--border); font-size: 0.75rem; }
+td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.9rem; }
 
-.pill { padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-.active { color: #00ff00; background: rgba(0,255,0,0.1); }
-.repair { color: #ffae00; background: rgba(255,174,0,0.1); }
-
-.del-btn { background: none; border: none; cursor: pointer; filter: grayscale(1); }
-.add-node-btn { background: var(--gold); border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-
-.grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 30px; }
-.stat-card { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 40px; border-radius: 12px; text-align: center; }
-.stat-card h4 { color: var(--gold); margin-bottom: 15px; font-size: 0.8rem; }
-.stat-card p { font-size: 2.5rem; font-weight: bold; }
-
-.term-btn { margin-top: 20px; width: 100%; background: none; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 10px; cursor: pointer; border-radius: 5px; }
+/* Modal Form */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
+.glass-form { background: #111; padding: 40px; border-radius: 20px; border: 1px solid var(--gold); width: 400px; display: flex; flex-direction: column; gap: 15px; }
+.glass-form input { padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 5px; }
+.gold-btn { background: var(--gold); color: black; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
+.status.active { color: #00ff00; }

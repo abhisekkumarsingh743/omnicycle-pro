@@ -2,40 +2,33 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-const SERVICES = {
-    auth: process.env.AUTH_SERVICE_URL,
-    content: process.env.CONTENT_SERVICE_URL,
-    audit: process.env.AUDIT_SERVICE_URL,
-    report: process.env.REPORT_SERVICE_URL,
-    system: process.env.SYSTEM_SERVICE_URL
-};
+const CONTENT_URL = process.env.CONTENT_SERVICE_URL;
 
 app.get('/all-data', async (req, res) => {
     try {
-        // Services se live data fetch karna
-        const [inv, aud, rep, sys] = await Promise.allSettled([
-            axios.get(`${SERVICES.content}/api/content/inventory`),
-            axios.get(`${SERVICES.audit}/api/audit/logs`),
-            axios.get(`${SERVICES.report}/api/reports/metrics`),
-            axios.get(`${SERVICES.system}/api/system/health`)
-        ]);
-
-        res.json({
-            inventory: inv.status === 'fulfilled' ? inv.value.data : [],
-            auditLogs: aud.status === 'fulfilled' ? aud.value.data : [],
-            metrics: rep.status === 'fulfilled' ? rep.value.data : {},
-            system: sys.status === 'fulfilled' ? sys.value.data : {}
-        });
-    } catch (error) {
-        res.status(500).json({ error: "Gateway failed to fetch data" });
-    }
+        const inv = await axios.get(`${CONTENT_URL}/api/content/inventory`);
+        res.json({ inventory: inv.data, auditLogs: [], metrics: { efficiency: "98%", uptime: "99.9%" } });
+    } catch (e) { res.status(500).send("Sync Error"); }
 });
 
-app.get('/', (req, res) => res.send("GATEWAY_READY"));
+// Proxy Add Node
+app.post('/add-item', async (req, res) => {
+    try {
+        const response = await axios.post(`${CONTENT_URL}/api/content/inventory`, req.body);
+        res.json(response.data);
+    } catch (e) { res.status(500).send("Add Error"); }
+});
+
+// Proxy Delete Node
+app.delete('/delete-item/:id', async (req, res) => {
+    try {
+        await axios.delete(`${CONTENT_URL}/api/content/inventory/${req.params.id}`);
+        res.json({ success: true });
+    } catch (e) { res.status(500).send("Delete Error"); }
+});
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Gateway running on ${PORT}`));
+app.listen(PORT, () => console.log(`Gateway on ${PORT}`));

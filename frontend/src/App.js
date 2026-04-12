@@ -5,141 +5,108 @@ import './App.css';
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 function App() {
-  const [data, setData] = useState({ inventory: [], auditLogs: [], metrics: {}, system: {} });
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({ inventory: [] });
   const [activeTab, setActiveTab] = useState('inventory');
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newItem, setNewItem] = useState({ name: '', category: '', stock: '', status: 'Active' });
 
-  useEffect(() => {
-    if (isLoggedIn) fetchData();
-  }, [isLoggedIn]);
+  useEffect(() => { if (isLoggedIn) fetchData(); }, [isLoggedIn]);
 
-  const fetchData = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/all-data`);
-      setData(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Gateway Sync Error:", err);
-      setLoading(false);
-    }
+  const fetchData = () => {
+    axios.get(`${API_BASE}/all-data`).then(res => setData(res.data)).catch(console.error);
   };
 
-  // --- Handlers ---
-  const handleLogin = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
+    try {
+      await axios.post(`${API_BASE}/add-item`, newItem);
+      setShowAddForm(false);
+      fetchData();
+    } catch (e) { alert("Backend Error"); }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_BASE}/delete-item/${id}`);
+      fetchData();
+    } catch (e) { alert("Delete Error"); }
   };
 
-  const addItem = () => {
-    const newItem = { id: `IND-${Math.floor(Math.random() * 900 + 100)}`, name: "New Asset Node", category: "General", stock: 0, status: "Active" };
-    setData({ ...data, inventory: [newItem, ...data.inventory] });
-  };
-
-  const deleteItem = (id) => {
-    setData({ ...data, inventory: data.inventory.filter(item => item.id !== id) });
-  };
-
-  // --- Views ---
   if (!isLoggedIn) return (
-    <div className="login-container">
-      <div className="login-box">
-        <h1 className="glitch-text">OMNICYCLE_PRO</h1>
-        <p>INDUSTRIAL_ACCESS_REQUIRED</p>
-        <form onSubmit={handleLogin}>
-          <input type="text" placeholder="IDENTITY_KEY" required />
-          <input type="password" placeholder="SECURITY_HASH" required />
-          <button type="submit" className="glow-btn">INITIALIZE</button>
-        </form>
+    <div className="login-page">
+      <div className="glass-login">
+        <h2>OMNICYCLE LOGIN</h2>
+        <button className="gold-btn" onClick={() => { localStorage.setItem('isLoggedIn', 'true'); setIsLoggedIn(true); }}>
+          INITIALIZE AS ADMIN
+        </button>
       </div>
     </div>
   );
 
-  if (loading) return <div className="loader">DECRYPTING_SYSTEM_NODES...</div>;
-
   return (
-    <div className="dashboard-root">
-      <aside className="elite-sidebar">
-        <div className="sidebar-brand">OMNICYCLE</div>
-        <nav className="nav-group">
-          <button className={activeTab === 'inventory' ? 'nav-tab active' : 'nav-tab'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
-          <button className={activeTab === 'reports' ? 'nav-tab active' : 'nav-tab'} onClick={() => setActiveTab('reports')}>📈 REPORTS</button>
-          <button className={activeTab === 'audit' ? 'nav-tab active' : 'nav-tab'} onClick={() => setActiveTab('audit')}>📜 AUDIT</button>
-        </nav>
-        <div className="user-section">
-          <div className="status-dot"></div>
-          <p>ABHISHEK SINGH</p>
-          <button className="term-btn" onClick={handleLogout}>TERMINATE</button>
+    <div className="app-layout">
+      <aside className="vertical-nav">
+        <h1 className="brand">OMNICYCLE</h1>
+        
+        <div className="nav-group">
+          <p className="nav-label">MONITORING</p>
+          <button className={activeTab === 'inventory' ? 'v-btn active' : 'v-btn'} onClick={() => setActiveTab('inventory')}>📦 INVENTORY</button>
+          <button className={activeTab === 'reports' ? 'v-btn active' : 'v-btn'} onClick={() => setActiveTab('reports')}>📈 REPORTS</button>
+          
+          <p className="nav-label">ACTIONS</p>
+          <button className="v-btn action" onClick={() => setShowAddForm(true)}>➕ ADD NODE</button>
+          <button className="v-btn pdf">📄 EXPORT PDF</button>
+          <button className="v-btn mail">📧 SEND MAIL</button>
+        </div>
+
+        <div className="user-profile">
+          <div className="avatar">AS</div>
+          <div className="info">
+            <p className="u-name">Abhishek Singh</p>
+            <p className="u-role">ADMIN_ACCESS</p>
+          </div>
+          <button className="term-btn" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
         </div>
       </aside>
 
       <main className="main-viewport">
-        <header className="viewport-nav">
-          <h2>{activeTab.toUpperCase()} _PANEL</h2>
-          <div className="action-row">
-            <button className="glass-btn">📄 PDF</button>
-            <button className="glass-btn">📧 MAIL</button>
-          </div>
-        </header>
-
-        <div className="content-scroll">
-          {activeTab === 'inventory' && (
-            <div className="glass-table-card">
-              <div className="table-header">
-                <h3>Global Inventory Sync</h3>
-                <button className="add-node-btn" onClick={addItem}>+ ADD_NODE</button>
+        {showAddForm && (
+          <div className="modal-overlay">
+            <form className="glass-form" onSubmit={handleAdd}>
+              <h3>REGISTER NEW NODE</h3>
+              <input placeholder="Asset Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
+              <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
+              <input type="number" placeholder="Stock" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
+              <div className="form-btns">
+                <button type="submit" className="gold-btn">CONFIRM</button>
+                <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>CANCEL</button>
               </div>
-              <table>
-                <thead>
-                  <tr><th>REF_ID</th><th>ASSET_NAME</th><th>CAT</th><th>QTY</th><th>STATUS</th><th>OP</th></tr>
-                </thead>
-                <tbody>
-                  {data.inventory.map(item => (
-                    <tr key={item.id}>
-                      <td>{item.id}</td><td>{item.name}</td><td>{item.category}</td><td>{item.stock}</td>
-                      <td><span className={`pill ${item.status.toLowerCase()}`}>{item.status}</span></td>
-                      <td><button onClick={() => deleteItem(item.id)} className="del-btn">🗑️</button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            </form>
+          </div>
+        )}
 
-          {activeTab === 'reports' && (
-            <div className="grid-container">
-              <div className="stat-card"><h4>EFFICIENCY</h4><p>{data.metrics.efficiency || '98.4%'}</p></div>
-              <div className="stat-card"><h4>ACTIVE_NODES</h4><p>{data.metrics.nodes || '12'}</p></div>
-              <div className="stat-card"><h4>UPTIME</h4><p>{data.metrics.uptime || '99.9%'}</p></div>
-            </div>
-          )}
-
-          {activeTab === 'audit' && (
-            <div className="glass-table-card">
-              <table>
-                <thead>
-                  <tr><th>LOG_ID</th><th>EVENT</th><th>OPERATOR</th><th>TS</th></tr>
-                </thead>
-                <tbody>
-                  {data.auditLogs.map(log => (
-                    <tr key={log.id}>
-                      <td>{log.id}</td><td>{log.event}</td><td>{log.operator}</td><td>{new Date(log.time).toLocaleTimeString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <div className="content-box">
+          <h2>{activeTab.toUpperCase()} DATA</h2>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th><th>OP</th></tr>
+              </thead>
+              <tbody>
+                {data.inventory.map(item => (
+                  <tr key={item.id}>
+                    <td>{item.id}</td><td>{item.name}</td><td>{item.stock}</td>
+                    <td><span className={`status ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                    <td><button onClick={() => handleDelete(item.id)} className="trash">🗑️</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
   );
 }
-
 export default App;
