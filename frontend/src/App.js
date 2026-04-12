@@ -45,9 +45,7 @@ function App() {
   const sendEmail = () => {
     const email = prompt("Enter Recipient Email:");
     if (email) {
-      const subject = encodeURIComponent("Omnicycle System Data Report");
-      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}\n\nPlease check the dashboard for detailed inventory.`);
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:${email}?subject=Omnicycle_Report&body=System_Status_Alert`;
     }
   };
 
@@ -60,7 +58,7 @@ function App() {
             <input type="text" placeholder="IDENTITY_KEY" required />
             <input type="password" placeholder="SECURE_HASH" required />
           </div>
-          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
+          <button type="submit" className="login-submit">INITIALIZE</button>
         </form>
       </div>
     </div>
@@ -68,6 +66,7 @@ function App() {
 
   return (
     <div className="dashboard-root">
+      {/* Sidebar - Desktop & Tablet Only */}
       <aside className="vertical-nav">
         <h1 className="nav-logo">OMNICYCLE</h1>
         <nav className="nav-links">
@@ -76,85 +75,81 @@ function App() {
           <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
           <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
         </nav>
-        
-        {/* Updated Side Panel User Info */}
         <div className="nav-user">
           <div className="user-info">
             <p className="u-label">LOGGED AS:</p>
             <p className="u-name">ADMINISTRATOR</p>
-            <p className="u-status">● SYSTEM_ONLINE</p>
           </div>
-          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE ACCESS</button>
+          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
         </div>
       </aside>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="mobile-bottom-nav">
+        <button className={activeTab === 'inventory' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('inventory')}>📦</button>
+        <button className={activeTab === 'reports' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('reports')}>📊</button>
+        <button className={activeTab === 'master' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('master')}>📂</button>
+        <button className={activeTab === 'audit' ? 'm-btn active' : 'm-btn'} onClick={() => setActiveTab('audit')}>📜</button>
+      </nav>
 
       <main className="main-viewport">
         <header className="viewport-header">
           <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
-            <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
-            <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
+            <button className="util-btn gold mobile-hide" onClick={exportToPDF}>📄 PDF</button>
+            <button className="util-btn mobile-hide" onClick={sendEmail}>📧 MAIL</button>
           </div>
         </header>
 
         <div className="scroll-content">
-          {activeTab === 'inventory' && (
-            <div className="table-wrapper">
-              <div className="table-top">
-                <h3>Live Asset Nodes</h3>
-                <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
+          <div className="responsive-table-container">
+            {activeTab === 'inventory' && (
+              <div className="table-wrapper">
+                <div className="table-top">
+                  <h3>Live Assets</h3>
+                  <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD</button>
+                </div>
+                <table>
+                  <thead><tr><th>REF</th><th>NAME</th><th>QTY</th><th className="tab-hide">STATUS</th></tr></thead>
+                  <tbody>
+                    {data.inventory.map(item => (
+                      <tr key={item.id}>
+                        <td className="mono">{item.id.slice(-4)}</td>
+                        <td>{item.name}</td>
+                        <td>{item.stock}</td>
+                        <td className="tab-hide"><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <table>
-                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr></thead>
-                <tbody>
-                  {data.inventory.map(item => (
-                    <tr key={item.id}><td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {(activeTab === 'reports' || activeTab === 'master') && (
-            <div className="table-wrapper">
-              <h3>System Metrics</h3>
-              <table>
-                <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
-                <tbody>
-                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
-                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td><td className="green">ONLINE</td></tr>
-                  <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td><td className="green">HEALTHY</td></tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {activeTab === 'audit' && (
-            <div className="table-wrapper">
-              <h3>System Logs</h3>
-              <table>
-                <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
-                <tbody>
-                  {data.auditLogs.map(log => (
-                    <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            )}
+            
+            {(activeTab === 'reports' || activeTab === 'master') && (
+              <div className="table-wrapper">
+                <h3>System Metrics</h3>
+                <table>
+                  <thead><tr><th>METRIC</th><th>VAL</th></tr></thead>
+                  <tbody>
+                    <tr><td>Efficiency</td><td>{data.metrics.efficiency}</td></tr>
+                    <tr><td>Nodes</td><td>{data.metrics.nodes}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         {showAddForm && (
           <div className="modal-bg">
             <div className="modal-card">
-              <h3>REGISTER NEW ITEM</h3>
+              <h3>ADD ITEM</h3>
               <form className="modal-form" onSubmit={async (e) => { e.preventDefault(); await axios.post(`${API_BASE}/add-item`, newItem); setShowAddForm(false); fetchData(); }}>
                 <input placeholder="Name" onChange={e => setNewItem({...newItem, name: e.target.value})} required />
-                <input placeholder="Category" onChange={e => setNewItem({...newItem, category: e.target.value})} required />
-                <input type="number" placeholder="Quantity" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
+                <input type="number" placeholder="Qty" onChange={e => setNewItem({...newItem, stock: e.target.value})} required />
                 <div className="modal-footer">
-                  <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>CANCEL</button>
-                  <button type="submit" className="confirm-btn">CONFIRM</button>
+                  <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>X</button>
+                  <button type="submit" className="confirm-btn">SAVE</button>
                 </div>
               </form>
             </div>
