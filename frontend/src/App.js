@@ -12,6 +12,10 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
   const [showAddForm, setShowAddForm] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', category: '', stock: '', status: 'Active' });
+  
+  // Login State for form inputs
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPass, setLoginPass] = useState('');
 
   useEffect(() => { if (isLoggedIn) fetchData(); }, [isLoggedIn]);
 
@@ -26,15 +30,25 @@ function App() {
     } catch (err) { console.error("Sync Error"); }
   };
 
-  // Naya Delete Logic
   const deleteItem = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
         await axios.delete(`${API_BASE}/delete-item/${id}`);
-        fetchData(); // UI refresh karne ke liye
+        fetchData();
       } catch (err) {
         alert("Delete Failed: Backend connectivity issue.");
       }
+    }
+  };
+
+  // STRICT LOGIN LOGIC
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (loginEmail === "admin@icms.com" && loginPass === "password123") {
+      localStorage.setItem('isLoggedIn', 'true');
+      setIsLoggedIn(true);
+    } else {
+      alert("INVALID_IDENTITY: ACCESS_DENIED");
     }
   };
 
@@ -67,12 +81,24 @@ function App() {
     <div className="login-wrapper">
       <div className="login-glass-card">
         <h1>OMNICYCLE</h1>
-        <form onSubmit={(e) => { e.preventDefault(); localStorage.setItem('isLoggedIn', 'true'); setIsLoggedIn(true); }}>
+        <form onSubmit={handleLogin}>
           <div className="input-group">
-            <input type="text" placeholder="USER_ID" required />
-            <input type="password" placeholder="USER_PASSWORD" required />
+            <input 
+              type="text" 
+              placeholder="IDENTITY (admin@icms.com)" 
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              required 
+            />
+            <input 
+              type="password" 
+              placeholder="SECURE_HASH (password123)" 
+              value={loginPass}
+              onChange={(e) => setLoginPass(e.target.value)}
+              required 
+            />
           </div>
-          <button type="submit" className="login-submit">LOGIN</button>
+          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
         </form>
       </div>
     </div>
