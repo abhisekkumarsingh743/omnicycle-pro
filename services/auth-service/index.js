@@ -8,8 +8,6 @@ const USERS = [
     { email: 'admin@icms.com', password: 'password123', role: 'ADMIN', name: 'Abhishek Singh' }
 ];
 
-app.get('/', (req, res) => res.status(200).send("AUTH_SERVICE_LIVE"));
-
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
     const user = USERS.find(u => u.email === email && u.password === password);
@@ -20,5 +18,7 @@ app.post('/login', (req, res) => {
     }
 });
 
+app.get('/', (req, res) => res.send("AUTH_SERVICE_LIVE"));
+
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Auth Service on ${PORT}`));
+app.listen(PORT, () => console.log(`Auth running on ${PORT}`));
