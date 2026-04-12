@@ -46,7 +46,7 @@ function App() {
     const email = prompt("Enter Recipient Email:");
     if (email) {
       const subject = encodeURIComponent("Omnicycle System Data Report");
-      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}\n\nPlease check the dashboard for detailed inventory.`);
+      const body = encodeURIComponent(`System Summary:\nEfficiency: ${data.metrics.efficiency}\nTotal Nodes: ${data.metrics.nodes}`);
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     }
   };
@@ -68,6 +68,7 @@ function App() {
 
   return (
     <div className="dashboard-root">
+      {/* Sidebar (Desktop/Tab) */}
       <aside className="vertical-nav">
         <h1 className="nav-logo">OMNICYCLE</h1>
         <nav className="nav-links">
@@ -76,24 +77,22 @@ function App() {
           <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
           <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
         </nav>
-        
-        {/* Updated Side Panel User Info */}
         <div className="nav-user">
           <div className="user-info">
             <p className="u-label">LOGGED AS:</p>
             <p className="u-name">ADMINISTRATOR</p>
-            <p className="u-status">● SYSTEM_ONLINE</p>
           </div>
           <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE ACCESS</button>
         </div>
       </aside>
 
+      {/* Main Viewport */}
       <main className="main-viewport">
         <header className="viewport-header">
           <h2>{activeTab.toUpperCase()}</h2>
           <div className="header-actions">
-            <button className="util-btn gold" onClick={exportToPDF}>📄 EXPORT PDF</button>
-            <button className="util-btn" onClick={sendEmail}>📧 SEND MAIL</button>
+            <button className="util-btn gold" onClick={exportToPDF}>📄 PDF</button>
+            <button className="util-btn hide-mobile" onClick={sendEmail}>📧 MAIL</button>
           </div>
         </header>
 
@@ -104,14 +103,21 @@ function App() {
                 <h3>Live Asset Nodes</h3>
                 <button className="prime-btn" onClick={() => setShowAddForm(true)}>+ ADD ITEMS</button>
               </div>
-              <table>
-                <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th>STATUS</th></tr></thead>
-                <tbody>
-                  {data.inventory.map(item => (
-                    <tr key={item.id}><td className="mono">{item.id}</td><td>{item.name}</td><td>{item.stock}</td><td><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td></tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="responsive-table">
+                <table>
+                  <thead><tr><th>REF_ID</th><th>NAME</th><th>QTY</th><th className="hide-mobile">STATUS</th></tr></thead>
+                  <tbody>
+                    {data.inventory.map(item => (
+                      <tr key={item.id}>
+                        <td className="mono">{item.id.slice(-4)}</td>
+                        <td>{item.name}</td>
+                        <td>{item.stock}</td>
+                        <td className="hide-mobile"><span className={`badge ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -119,11 +125,11 @@ function App() {
             <div className="table-wrapper">
               <h3>System Metrics</h3>
               <table>
-                <thead><tr><th>PARAMETER</th><th>VALUE</th><th>STATUS</th></tr></thead>
+                <thead><tr><th>PARAMETER</th><th>VALUE</th></tr></thead>
                 <tbody>
-                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td><td className="green">OPTIMAL</td></tr>
-                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td><td className="green">ONLINE</td></tr>
-                  <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td><td className="green">HEALTHY</td></tr>
+                  <tr><td>System Efficiency</td><td>{data.metrics.efficiency}</td></tr>
+                  <tr><td>Cluster Nodes</td><td>{data.metrics.nodes}</td></tr>
+                  <tr><td>Database Uptime</td><td>{data.metrics.uptime}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -133,15 +139,23 @@ function App() {
             <div className="table-wrapper">
               <h3>System Logs</h3>
               <table>
-                <thead><tr><th>ID</th><th>EVENT</th><th>TIME</th></tr></thead>
+                <thead><tr><th>ID</th><th>EVENT</th><th className="hide-mobile">TIME</th></tr></thead>
                 <tbody>
                   {data.auditLogs.map(log => (
-                    <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td>{new Date(log.time).toLocaleTimeString()}</td></tr>
+                    <tr key={log.id}><td>{log.id}</td><td>{log.event}</td><td className="hide-mobile">{new Date(log.time).toLocaleTimeString()}</td></tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+        </div>
+
+        {/* Bottom Bar for Mobile Only */}
+        <div className="mobile-bottom-bar">
+          <button className={activeTab === 'inventory' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('inventory')}>📦</button>
+          <button className={activeTab === 'reports' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('reports')}>📊</button>
+          <button className={activeTab === 'master' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('master')}>📂</button>
+          <button className={activeTab === 'audit' ? 'm-tab active' : 'm-tab'} onClick={() => setActiveTab('audit')}>📜</button>
         </div>
 
         {showAddForm && (
