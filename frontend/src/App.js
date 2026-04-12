@@ -85,20 +85,20 @@ function App() {
           <div className="input-group">
             <input 
               type="text" 
-              placeholder="IDENTITY (admin@icms.com)" 
+              placeholder="USER_ID" 
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
               required 
             />
             <input 
               type="password" 
-              placeholder="SECURE_HASH (password123)" 
+              placeholder="PASSWORD" 
               value={loginPass}
               onChange={(e) => setLoginPass(e.target.value)}
               required 
             />
           </div>
-          <button type="submit" className="login-submit">INITIALIZE COMMAND CENTER</button>
+          <button type="submit" className="login-submit">LOGIN</button>
         </form>
       </div>
     </div>
