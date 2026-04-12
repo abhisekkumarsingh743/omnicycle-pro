@@ -18,7 +18,6 @@ function App() {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_BASE}/all-data`);
-      // Sabhi tabs ka data yahan ensure kiya hai
       setData({
         inventory: res.data.inventory || [],
         metrics: res.data.metrics || { efficiency: "98.4%", nodes: "14", uptime: "99.9%" },
@@ -43,7 +42,6 @@ function App() {
     } catch (e) { alert("PDF Error"); }
   };
 
-  // --- Fixed Email Logic ---
   const sendEmail = () => {
     const email = prompt("Enter Recipient Email:");
     if (email) {
@@ -78,9 +76,15 @@ function App() {
           <button className={activeTab === 'master' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('master')}>📂 MASTER DATA</button>
           <button className={activeTab === 'audit' ? 'n-btn active' : 'n-btn'} onClick={() => setActiveTab('audit')}>📜 AUDIT TRAIL</button>
         </nav>
+        
+        {/* Updated Side Panel User Info */}
         <div className="nav-user">
-          <p className="u-name">ABHISHEK SINGH</p>
-          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE</button>
+          <div className="user-info">
+            <p className="u-label">LOGGED AS:</p>
+            <p className="u-name">ADMINISTRATOR</p>
+            <p className="u-status">● SYSTEM_ONLINE</p>
+          </div>
+          <button className="logout-action" onClick={() => { localStorage.clear(); setIsLoggedIn(false); }}>TERMINATE ACCESS</button>
         </div>
       </aside>
 
